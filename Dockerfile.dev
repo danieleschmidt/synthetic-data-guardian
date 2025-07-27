@@ -1,0 +1,49 @@
+# =============================================================================
+# Synthetic Data Guardian - Development Dockerfile
+# =============================================================================
+
+FROM node:18-alpine AS development
+
+# Install development tools and dependencies
+RUN apk update && apk upgrade && \
+    apk add --no-cache \
+    python3 \
+    py3-pip \
+    make \
+    g++ \
+    git \
+    curl \
+    bash \
+    ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+# Create development user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S developer -u 1001 -G nodejs
+
+# Set working directory
+WORKDIR /workspace
+
+# Copy package files
+COPY package*.json ./
+COPY requirements*.txt ./
+
+# Install Node.js dependencies (including dev dependencies)
+RUN npm ci --silent
+
+# Install Python dependencies
+RUN pip3 install --no-cache-dir -r requirements-dev.txt
+
+# Set development environment
+ENV NODE_ENV=development
+ENV DEBUG=true
+ENV HOT_RELOAD=true
+
+# Expose development ports
+EXPOSE 8080 9229 3000
+
+# Set user
+USER developer
+
+# Development command with hot reload
+CMD ["npm", "run", "dev"]
