@@ -1,0 +1,82 @@
+{
+  "name": "Synthetic Data Guardian",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11-bullseye",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.pylint",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-python.mypy-type-checker",
+        "charliermarsh.ruff",
+        "ms-azuretools.vscode-docker",
+        "github.vscode-pull-request-github",
+        "redhat.vscode-yaml",
+        "ms-vscode.test-adapter-converter",
+        "ms-vscode.extension-test-runner",
+        "formulahendry.code-runner",
+        "streetsidesoftware.code-spell-checker",
+        "bierner.markdown-mermaid",
+        "davidanson.vscode-markdownlint"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true,
+        "python.formatting.provider": "black",
+        "python.sortImports.args": ["--profile", "black"],
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": true
+        },
+        "files.exclude": {
+          "**/__pycache__": true,
+          "**/.pytest_cache": true,
+          "**/.coverage": true,
+          "**/htmlcov": true,
+          "**/.mypy_cache": true,
+          "**/.ruff_cache": true
+        },
+        "python.testing.pytestEnabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.pytestArgs": [
+          "tests",
+          "--verbose",
+          "--cov=src",
+          "--cov-report=html",
+          "--cov-report=term-missing"
+        ]
+      }
+    }
+  },
+  "forwardPorts": [8080, 5432, 6379, 7687],
+  "portsAttributes": {
+    "8080": {
+      "label": "API Server",
+      "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "PostgreSQL"
+    },
+    "6379": {
+      "label": "Redis"
+    },
+    "7687": {
+      "label": "Neo4j Bolt"
+    }
+  },
+  "postCreateCommand": "pip install -e .[dev] && pre-commit install",
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "PYTHONPATH": "/workspaces/synthetic-data-guardian/src",
+    "ENVIRONMENT": "development"
+  }
+}

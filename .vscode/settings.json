@@ -1,0 +1,155 @@
+{
+  "python.defaultInterpreterPath": "./venv/bin/python",
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.include": ["src", "tests"],
+  "python.analysis.exclude": [
+    "**/__pycache__",
+    "**/.pytest_cache",
+    "**/node_modules",
+    "**/.venv",
+    "**/venv",
+    "**/.git"
+  ],
+  
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  "python.linting.mypyEnabled": true,
+  "python.linting.banditEnabled": true,
+  "python.linting.flake8Enabled": false,
+  
+  "python.formatting.provider": "black",
+  "python.formatting.blackArgs": ["--line-length=88"],
+  
+  "python.sortImports.args": ["--profile", "black"],
+  "python.sortImports.path": "isort",
+  
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": [
+    "tests",
+    "-v",
+    "--tb=short",
+    "--cov=src/synthetic_guardian",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov"
+  ],
+  "python.testing.autoTestDiscoverOnSaveEnabled": true,
+  
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": false,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true,
+    "source.fixAll": true
+  },
+  
+  "editor.rulers": [88],
+  "editor.wordWrap": "off",
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  
+  "files.associations": {
+    "*.yml": "yaml",
+    "*.yaml": "yaml",
+    ".env*": "dotenv",
+    "Dockerfile*": "dockerfile",
+    "*.md": "markdown"
+  },
+  
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/.coverage": true,
+    "**/htmlcov": true,
+    "**/*.pyc": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/.venv": true,
+    "**/venv": true,
+    "**/.git": false
+  },
+  
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/.pytest_cache/**": true,
+    "**/__pycache__/**": true,
+    "**/htmlcov/**": true
+  },
+  
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/.pytest_cache": true,
+    "**/__pycache__": true,
+    "**/htmlcov": true,
+    "**/.venv": true,
+    "**/venv": true
+  },
+  
+  "terminal.integrated.env.linux": {
+    "PYTHONPATH": "${workspaceFolder}/src"
+  },
+  "terminal.integrated.env.osx": {
+    "PYTHONPATH": "${workspaceFolder}/src"
+  },
+  "terminal.integrated.env.windows": {
+    "PYTHONPATH": "${workspaceFolder}\\src"
+  },
+  
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml",
+    "https://json.schemastore.org/github-action.json": ".github/actions/*/action.yml",
+    "https://json.schemastore.org/docker-compose.json": "docker-compose*.yml"
+  },
+  
+  "markdownlint.config": {
+    "MD013": false,
+    "MD041": false
+  },
+  
+  "cSpell.words": [
+    "anthropic",
+    "ctgan",
+    "fastapi",
+    "pydantic",
+    "pytest",
+    "sqlalchemy",
+    "terragon",
+    "uvicorn",
+    "watermarking"
+  ],
+  
+  "json.schemas": [
+    {
+      "fileMatch": ["pyproject.toml"],
+      "url": "https://json.schemastore.org/pyproject.json"
+    }
+  ],
+  
+  "git.ignoreLimitWarning": true,
+  "git.autofetch": true,
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  
+  "extensions.recommendations": [
+    "ms-python.python",
+    "ms-python.pylint",
+    "ms-python.black-formatter",
+    "ms-python.isort",
+    "ms-python.mypy-type-checker",
+    "charliermarsh.ruff",
+    "ms-azuretools.vscode-docker",
+    "github.vscode-pull-request-github",
+    "redhat.vscode-yaml",
+    "davidanson.vscode-markdownlint",
+    "bierner.markdown-mermaid",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}

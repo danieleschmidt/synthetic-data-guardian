@@ -1,0 +1,367 @@
+version: '3.8'
+
+services:
+  # =============================================================================
+  # APPLICATION SERVICES
+  # =============================================================================
+  
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+      args:
+        BUILD_DATE: ${BUILD_DATE:-2024-01-01T00:00:00Z}
+        VCS_REF: ${VCS_REF:-dev}
+        VERSION: ${VERSION:-1.0.0-dev}
+    container_name: synthetic-guardian-app
+    ports:
+      - "8080:8080"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/synthetic_guardian
+      - REDIS_URL=redis://redis:6379/0
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=password
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - ENCRYPTION_KEY=dev-encryption-key-32-bytes-long!!
+      - WATERMARK_SECRET_KEY=dev-watermark-key-32-bytes-long!!
+      - LOG_LEVEL=DEBUG
+      - PYTHONPATH=/app/src
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    networks:
+      - synthetic-guardian-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "/app/healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # =============================================================================
+  # DATABASE SERVICES
+  # =============================================================================
+  
+  postgres:
+    image: postgres:15-alpine
+    container_name: synthetic-guardian-postgres
+    environment:
+      - POSTGRES_DB=synthetic_guardian
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - synthetic-guardian-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d synthetic_guardian"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: >
+      postgres 
+      -c shared_preload_libraries=pg_stat_statements
+      -c pg_stat_statements.track=all
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c work_mem=4MB
+      -c maintenance_work_mem=64MB
+
+  redis:
+    image: redis:7-alpine
+    container_name: synthetic-guardian-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./config/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - synthetic-guardian-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+  neo4j:
+    image: neo4j:5-community
+    container_name: synthetic-guardian-neo4j
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_dbms_default__database=neo4j
+      - NEO4J_dbms_memory_pagecache_size=1G
+      - NEO4J_dbms_memory_heap_initial__size=1G
+      - NEO4J_dbms_memory_heap_max__size=1G
+      - NEO4J_dbms_security_procedures_unrestricted=gds.*
+      - NEO4J_dbms_security_procedures_allowlist=gds.*
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/var/lib/neo4j/import
+      - neo4j_plugins:/plugins
+    networks:
+      - synthetic-guardian-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "password", "RETURN 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # =============================================================================
+  # WORKER SERVICES
+  # =============================================================================
+  
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: synthetic-guardian-worker
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/synthetic_guardian
+      - REDIS_URL=redis://redis:6379/0
+      - NEO4J_URI=bolt://neo4j:7687
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - PYTHONPATH=/app/src
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - synthetic-guardian-network
+    restart: unless-stopped
+    command: celery -A synthetic_guardian.core.celery worker --loglevel=info --concurrency=2
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: synthetic-guardian-scheduler
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/synthetic_guardian
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - PYTHONPATH=/app/src
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - synthetic-guardian-network
+    restart: unless-stopped
+    command: celery -A synthetic_guardian.core.celery beat --loglevel=info
+
+  # =============================================================================
+  # MONITORING SERVICES
+  # =============================================================================
+  
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: synthetic-guardian-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - synthetic-guardian-network
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: synthetic-guardian-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - synthetic-guardian-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: synthetic-guardian-jaeger
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "14250:14250"  # gRPC
+      - "14268:14268"  # HTTP
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - synthetic-guardian-network
+    restart: unless-stopped
+
+  # =============================================================================
+  # DEVELOPMENT TOOLS
+  # =============================================================================
+  
+  adminer:
+    image: adminer:latest
+    container_name: synthetic-guardian-adminer
+    ports:
+      - "8081:8080"
+    networks:
+      - synthetic-guardian-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: synthetic-guardian-redis-commander
+    ports:
+      - "8082:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    networks:
+      - synthetic-guardian-network
+    restart: unless-stopped
+    depends_on:
+      - redis
+
+  # =============================================================================
+  # TESTING SERVICES
+  # =============================================================================
+  
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: testing
+    container_name: synthetic-guardian-tests
+    environment:
+      - ENVIRONMENT=testing
+      - TESTING=true
+      - DATABASE_URL=postgresql://postgres:postgres@postgres_test:5432/synthetic_guardian_test
+      - REDIS_URL=redis://redis_test:6379/15
+      - NEO4J_URI=bolt://neo4j_test:7687
+      - SECRET_KEY=test-secret-key
+      - PYTHONPATH=/app/src
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+      - ./test_results:/app/test_results
+    depends_on:
+      - postgres_test
+      - redis_test
+    networks:
+      - synthetic-guardian-network
+    profiles:
+      - testing
+    command: >
+      bash -c "
+        python -m pytest tests/ -v 
+        --cov=src/synthetic_guardian 
+        --cov-report=html:/app/test_results/htmlcov 
+        --cov-report=xml:/app/test_results/coverage.xml
+        --junit-xml=/app/test_results/junit.xml
+      "
+
+  postgres_test:
+    image: postgres:15-alpine
+    container_name: synthetic-guardian-postgres-test
+    environment:
+      - POSTGRES_DB=synthetic_guardian_test
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - synthetic-guardian-network
+    profiles:
+      - testing
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  redis_test:
+    image: redis:7-alpine
+    container_name: synthetic-guardian-redis-test
+    networks:
+      - synthetic-guardian-network
+    profiles:
+      - testing
+    tmpfs:
+      - /data
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  neo4j_data:
+    driver: local
+  neo4j_logs:
+    driver: local
+  neo4j_import:
+    driver: local
+  neo4j_plugins:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+
+networks:
+  synthetic-guardian-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

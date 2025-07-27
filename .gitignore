@@ -205,3 +205,158 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Project specific additions
+# ==========================
+
+# Configuration files with secrets
+.env.local
+.env.production
+.env.staging
+config/secrets.yaml
+secrets/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files
+logs/
+*.log
+*.log.*
+
+# Data files
+data/
+datasets/
+models/
+checkpoints/
+synthetic_data/
+generated/
+exports/
+uploads/
+
+# Cache directories
+.cache/
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.coverage_cache/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Kubernetes
+k8s/secrets/
+*.kubeconfig
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Security and keys
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+id_rsa*
+id_ed25519*
+known_hosts
+
+# AWS
+.aws/
+
+# Google Cloud
+.gcloud/
+
+# Azure
+.azure/
+
+# Monitoring and observability
+prometheus/
+grafana/
+jaeger/
+
+# Machine learning artifacts
+mlruns/
+artifacts/
+wandb/
+tensorboard/
+lightning_logs/
+
+# Documentation build artifacts
+docs/build/
+docs/source/_build/
+site/
+
+# IDE and editor files
+*.swp
+*.swo
+*~
+.vimrc.local
+.nvimrc.local
+
+# Application specific
+# ====================
+
+# Synthetic data guardian specific
+neo4j/
+postgres_data/
+redis_data/
+s3_data/
+generated_data/
+lineage_graphs/
+compliance_reports/
+audit_trails/
+watermarked_data/
+
+# API documentation
+openapi.json
+swagger.json
+
+# Performance profiles
+*.prof
+*.pstats
+
+# Memory dumps
+*.hprof
+core.*
+
+# Backup files
+*.bak
+*.backup
+
+# Test artifacts
+test_results/
+test_outputs/
+screenshots/
+videos/
+
+# Coverage reports
+htmlcov/
+.coverage
+coverage.xml
+.nyc_output
+
+# Bandit security reports
+bandit-report.json
+bandit-report.txt
+
+# Safety reports
+safety-report.json
+safety-report.txt
+
+# Pre-commit
+.pre-commit-config.yaml.backup

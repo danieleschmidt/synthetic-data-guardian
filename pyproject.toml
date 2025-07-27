@@ -1,0 +1,290 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "synthetic-data-guardian"
+version = "1.0.0"
+description = "Enterprise-grade synthetic data pipeline with built-in validation, watermarking, and auditable lineage tracking"
+authors = ["Terragon Labs <synthetic-data@terragon.com>"]
+license = "Apache-2.0"
+readme = "README.md"
+homepage = "https://github.com/terragon-labs/synthetic-data-guardian"
+repository = "https://github.com/terragon-labs/synthetic-data-guardian"
+documentation = "https://docs.terragon.com/synthetic-guardian"
+keywords = ["synthetic-data", "privacy", "compliance", "ai", "machine-learning"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Database :: Database Engines/Servers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+packages = [
+    { include = "synthetic_guardian", from = "src" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+# Core dependencies
+fastapi = "^0.104.1"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+pydantic = "^2.5.0"
+pydantic-settings = "^2.1.0"
+
+# Data processing
+pandas = "^2.1.0"
+numpy = "^1.24.0"
+scipy = "^1.11.0"
+scikit-learn = "^1.3.0"
+
+# Database
+sqlalchemy = "^2.0.0"
+alembic = "^1.13.0"
+psycopg2-binary = "^2.9.0"
+redis = "^5.0.0"
+neo4j = "^5.15.0"
+
+# Task queue
+celery = "^5.3.0"
+
+# Synthetic data generation
+sdv = "^1.11.0"
+ctgan = "^0.7.0"
+
+# Privacy and security
+differential-privacy = "^1.1.0"
+cryptography = "^41.0.0"
+
+# Monitoring and observability
+prometheus-client = "^0.19.0"
+opentelemetry-api = "^1.21.0"
+opentelemetry-sdk = "^1.21.0"
+opentelemetry-instrumentation-fastapi = "^0.42b0"
+sentry-sdk = {extras = ["fastapi"], version = "^1.38.0"}
+
+# HTTP client
+httpx = "^0.25.0"
+aiohttp = "^3.9.0"
+
+# Configuration and environment
+python-dotenv = "^1.0.0"
+typer = "^0.9.0"
+rich = "^13.7.0"
+
+# Validation and serialization
+marshmallow = "^3.20.0"
+jsonschema = "^4.20.0"
+
+# Optional backends
+openai = {version = "^1.3.0", optional = true}
+anthropic = {version = "^0.7.0", optional = true}
+transformers = {version = "^4.36.0", optional = true}
+torch = {version = "^2.1.0", optional = true}
+diffusers = {version = "^0.24.0", optional = true}
+pillow = {version = "^10.1.0", optional = true}
+networkx = {version = "^3.2.0", optional = true}
+
+[tool.poetry.extras]
+all = ["openai", "anthropic", "transformers", "torch", "diffusers", "pillow", "networkx"]
+tabular = ["sdv", "ctgan"]
+text = ["openai", "anthropic", "transformers", "torch"]
+vision = ["diffusers", "torch", "pillow"]
+graph = ["networkx", "torch"]
+
+[tool.poetry.group.dev.dependencies]
+# Testing
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.12.0"
+pytest-xdist = "^3.5.0"
+hypothesis = "^6.92.0"
+factory-boy = "^3.3.0"
+freezegun = "^1.2.0"
+
+# Code quality
+black = "^23.11.0"
+isort = "^5.12.0"
+pylint = "^3.0.0"
+mypy = "^1.7.0"
+ruff = "^0.1.6"
+bandit = "^1.7.0"
+safety = "^2.3.0"
+
+# Pre-commit hooks
+pre-commit = "^3.6.0"
+
+# Documentation
+mkdocs = "^1.5.0"
+mkdocs-material = "^9.4.0"
+mkdocstrings = {extras = ["python"], version = "^0.24.0"}
+
+# Development tools
+ipython = "^8.18.0"
+jupyter = "^1.0.0"
+jupyterlab = "^4.0.0"
+
+# Performance profiling
+py-spy = "^0.3.0"
+memory-profiler = "^0.61.0"
+
+[tool.poetry.scripts]
+synthetic-guardian = "synthetic_guardian.cli:app"
+sdg = "synthetic_guardian.cli:app"
+
+[tool.black]
+line-length = 88
+target-version = ['py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["synthetic_guardian"]
+known_third_party = ["fastapi", "pydantic", "sqlalchemy", "pandas", "numpy"]
+
+[tool.pylint.messages_control]
+disable = [
+    "C0103",  # Invalid name
+    "C0114",  # Missing module docstring
+    "C0116",  # Missing function docstring
+    "R0903",  # Too few public methods
+    "R0913",  # Too many arguments
+    "W0613",  # Unused argument
+]
+
+[tool.pylint.format]
+max-line-length = 88
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "sdv.*",
+    "ctgan.*",
+    "neo4j.*",
+    "openai.*",
+    "anthropic.*",
+]
+ignore_missing_imports = true
+
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/**/*" = ["B011", "B018"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = [
+    "tests",
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "privacy: marks tests related to privacy validation",
+    "security: marks tests related to security features",
+]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101", "B601"]  # Skip assert and shell injection warnings in tests
+
+[tool.semantic_release]
+version_toml = "pyproject.toml:tool.poetry.version"
+build_command = "poetry build"
+changelog_sections = "feature,fix,breaking,documentation,performance"
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = ["build", "chore", "ci", "docs", "feat", "fix", "perf", "style", "refactor", "test"]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]
+
+[tool.semantic_release.remote]
+name = "origin"
+type = "github"
