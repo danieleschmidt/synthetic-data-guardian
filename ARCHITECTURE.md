@@ -326,3 +326,17 @@ services:
 - **API Versioning**: Backward compatibility for integrations
 - **Configuration Management**: Dynamic configuration updates
 - **Event Streaming**: Kafka integration for real-time events
+
+## Development Workflow
+
+### SDLC Integration
+- **Code Quality**: Automated linting, formatting, and type checking
+- **Testing Strategy**: Unit, integration, e2e, and performance tests
+- **Security**: Pre-commit hooks, vulnerability scanning, secret detection
+- **Documentation**: Auto-generated API docs, comprehensive guides
+
+### CI/CD Pipeline
+1. **Pre-commit**: Quality checks and security scanning
+2. **CI**: Automated testing and validation
+3. **Security**: Dependency and container vulnerability scans
+4. **Deployment**: Automated releases with semantic versioning
