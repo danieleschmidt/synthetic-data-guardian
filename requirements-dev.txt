@@ -25,7 +25,7 @@ flake8-debugger>=4.1.0,<5.0.0
 flake8-eradicate>=1.5.0,<2.0.0
 flake8-logging-format>=0.9.0,<1.0.0
 flake8-print>=5.0.0,<6.0.0
-flake8-pytest-style>=1.7.0,<2.0.0
+flake8-pytest-style>=1.7.0,<3.0.0
 flake8-simplify>=0.21.0,<1.0.0
 
 # Type Checking
