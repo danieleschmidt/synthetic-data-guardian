@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run lint-staged for staged files
+npx lint-staged
+
+# Run security checks
+echo "🔍 Running security audit..."
+npm audit --audit-level high --production
+
+# Check for secrets in staged files
+echo "🔐 Checking for secrets..."
+npx secretlint $(git diff --cached --name-only --diff-filter=ACM | xargs)
+
+# Python security checks if Python files are staged
+if git diff --cached --name-only | grep -q "\.py$"; then
+  echo "🐍 Running Python security checks..."
+  bandit -r . -f json -o bandit-report.json || true
+  safety check --json --output safety-report.json || true
+fi
+
+echo "✅ Pre-commit checks completed"
