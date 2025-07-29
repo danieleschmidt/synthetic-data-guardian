@@ -1,0 +1,155 @@
+# Set default behavior to automatically normalize line endings
+* text=auto eol=lf
+
+# Source code
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.json text eol=lf
+*.py text eol=lf
+
+# Documentation
+*.md text eol=lf
+*.txt text eol=lf
+*.rst text eol=lf
+
+# Configuration files
+*.yaml text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+*.ini text eol=lf
+*.cfg text eol=lf
+*.conf text eol=lf
+*.config text eol=lf
+
+# Web assets
+*.html text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.sass text eol=lf
+*.less text eol=lf
+
+# Shell scripts (always use LF)
+*.sh text eol=lf
+*.bash text eol=lf
+*.zsh text eol=lf
+*.fish text eol=lf
+
+# Docker files
+Dockerfile text eol=lf
+Dockerfile.* text eol=lf
+*.dockerfile text eol=lf
+
+# Makefiles (always use LF and preserve tabs)
+Makefile text eol=lf
+*.mk text eol=lf
+*.make text eol=lf
+
+# SQL files
+*.sql text eol=lf
+
+# XML files
+*.xml text eol=lf
+*.xsl text eol=lf
+*.xsd text eol=lf
+
+# Lock files (always LF)
+package-lock.json text eol=lf
+yarn.lock text eol=lf
+Pipfile.lock text eol=lf
+poetry.lock text eol=lf
+
+# Images - treat as binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text eol=lf
+*.webp binary
+*.avif binary
+
+# Videos - treat as binary
+*.mp4 binary
+*.avi binary
+*.mov binary
+*.wmv binary
+*.flv binary
+*.webm binary
+
+# Audio - treat as binary
+*.mp3 binary
+*.wav binary
+*.ogg binary
+*.flac binary
+
+# Archives - treat as binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.bz2 binary
+*.xz binary
+*.7z binary
+*.rar binary
+
+# Fonts - treat as binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+
+# Office documents - treat as binary
+*.pdf binary
+*.doc binary
+*.docx binary
+*.xls binary
+*.xlsx binary
+*.ppt binary
+*.pptx binary
+
+# Certificates and keys - treat as binary
+*.pem binary
+*.crt binary
+*.cert binary
+*.cer binary
+*.key binary
+*.p12 binary
+*.pfx binary
+*.jks binary
+
+# Git-specific files
+.gitignore text eol=lf
+.gitattributes text eol=lf
+.gitkeep text eol=lf
+
+# License files
+LICENSE text eol=lf
+LICENCE text eol=lf
+COPYING text eol=lf
+
+# Security configurations
+SECURITY.md text eol=lf
+.security.yml text eol=lf
+
+# Dependency files
+requirements.txt text eol=lf
+requirements-*.txt text eol=lf
+Pipfile text eol=lf
+pyproject.toml text eol=lf
+setup.py text eol=lf
+setup.cfg text eol=lf
+
+# GitHub specific
+.github/** text eol=lf
+
+# IDE configurations
+.vscode/** text eol=lf
+.idea/** text eol=lf
+*.iml text eol=lf
+
+# Environment files
+.env text eol=lf
+.env.* text eol=lf
+*.env text eol=lf

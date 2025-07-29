@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Get the current branch
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+# Prevent direct push to main/master
+if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+  echo "❌ Direct push to $branch is not allowed!"
+  echo "Please create a pull request instead."
+  exit 1
+fi
+
+# Run full test suite before push
+echo "🧪 Running full test suite..."
+npm run test:all
+
+# Run type checking
+echo "🔍 Running type checks..."
+npm run typecheck
+
+# Run linting
+echo "🧹 Running linter..."
+npm run lint
+
+# Run security scan
+echo "🔐 Running security scan..."
+npm run security:audit
+
+# Check for large files
+echo "📦 Checking for large files..."
+git diff --cached --name-only | xargs -I {} sh -c 'if [ -f "{}" ] && [ $(stat -f%z "{}" 2>/dev/null || stat -c%s "{}" 2>/dev/null) -gt 10485760 ]; then echo "❌ File {} is larger than 10MB"; exit 1; fi'
+
+echo "✅ Pre-push checks completed successfully"

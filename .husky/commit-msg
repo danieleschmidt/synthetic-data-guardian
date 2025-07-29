@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Validate commit message format using commitlint
+npx --no-install commitlint --edit "$1"
+
+# Additional commit message validation
+commit_regex='^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\(.+\))?: .{1,50}'
+
+if ! grep -qE "$commit_regex" "$1"; then
+  echo "❌ Invalid commit message format!"
+  echo ""
+  echo "Commit message should follow the pattern:"
+  echo "type(scope): description"
+  echo ""
+  echo "Types: feat, fix, docs, style, refactor, perf, test, chore, ci, build, revert"
+  echo "Example: feat(api): add user authentication endpoint"
+  echo ""
+  exit 1
+fi
+
+echo "✅ Commit message format validated"
