@@ -1,0 +1,67 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    "security:openssf-scorecard",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":separatePatchReleases"
+  ],
+  "schedule": ["before 6am on monday"],
+  "timezone": "UTC",
+  "labels": ["dependencies"],
+  "assignees": ["@terragon-labs/maintainers"],
+  "reviewers": ["@terragon-labs/security"],
+  "packageRules": [
+    {
+      "groupName": "TypeScript and ESLint",
+      "matchPackageNames": [
+        "typescript",
+        "eslint",
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/parser"
+      ]
+    },
+    {
+      "groupName": "Testing framework",
+      "matchPackageNames": [
+        "jest",
+        "@types/jest",
+        "playwright",
+        "@playwright/test"
+      ]
+    },
+    {
+      "groupName": "Security tools",
+      "matchPackageNames": [
+        "snyk",
+        "helmet",
+        "express-rate-limit"
+      ],
+      "reviewers": ["@terragon-labs/security"],
+      "labels": ["security", "dependencies"]
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "automerge": true,
+      "automergeType": "pr",
+      "requiredStatusChecks": null
+    },
+    {
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr"
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security", "vulnerability"]
+  },
+  "osvVulnerabilityAlerts": true,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on monday"]
+  },
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 2
+}
