@@ -1,0 +1,416 @@
+{
+  "metadata": {
+    "lastUpdated": "2025-08-01T14:42:39.061Z",
+    "totalItems": 24,
+    "averageScore": "30.79",
+    "maturityLevel": 65,
+    "nextExecution": "2025-08-01T15:12:39.061Z"
+  },
+  "nextBestValue": {
+    "id": "perf-monitoring",
+    "title": "Enhance performance monitoring",
+    "type": "performance",
+    "source": "performance-tests",
+    "description": "Add more comprehensive performance benchmarks",
+    "effort": 6,
+    "impact": "medium",
+    "confidence": 0.7,
+    "files": [
+      "tests/performance/"
+    ],
+    "metadata": {
+      "type": "monitoring-enhancement"
+    },
+    "scores": {
+      "wsjf": 3.5,
+      "ice": 17.5,
+      "technicalDebt": 18,
+      "composite": 40.65
+    }
+  },
+  "topItems": [
+    {
+      "rank": 1,
+      "id": "perf-monitoring",
+      "title": "Enhance performance monitoring",
+      "type": "performance",
+      "source": "performance-tests",
+      "scores": {
+        "wsjf": 3.5,
+        "ice": 17.5,
+        "technicalDebt": 18,
+        "composite": 40.65
+      },
+      "effort": 6,
+      "impact": "medium",
+      "confidence": 0.7,
+      "files": [
+        "tests/performance/"
+      ]
+    },
+    {
+      "rank": 2,
+      "id": "comment-Li8udGVy",
+      "title": "Address BUG: value-discovery.js:780",
+      "type": "technical-debt",
+      "source": "code-comments",
+      "scores": {
+        "wsjf": 11,
+        "ice": 64.8,
+        "technicalDebt": 14,
+        "composite": 33.8
+      },
+      "effort": 2,
+      "impact": "high",
+      "confidence": 0.9,
+      "files": [
+        "./.terragon/value-discovery.js"
+      ]
+    },
+    {
+      "rank": 3,
+      "id": "comment-Li8udGVy",
+      "title": "Address HACK: value-discovery.js:781",
+      "type": "technical-debt",
+      "source": "code-comments",
+      "scores": {
+        "wsjf": 11,
+        "ice": 40.5,
+        "technicalDebt": 14,
+        "composite": 33.8
+      },
+      "effort": 2,
+      "impact": "medium",
+      "confidence": 0.9,
+      "files": [
+        "./.terragon/value-discovery.js"
+      ]
+    },
+    {
+      "rank": 4,
+      "id": "comment-Li8udGVy",
+      "title": "Address TODO: value-discovery.js:782",
+      "type": "technical-debt",
+      "source": "code-comments",
+      "scores": {
+        "wsjf": 11,
+        "ice": 40.5,
+        "technicalDebt": 14,
+        "composite": 33.8
+      },
+      "effort": 2,
+      "impact": "medium",
+      "confidence": 0.9,
+      "files": [
+        "./.terragon/value-discovery.js"
+      ]
+    },
+    {
+      "rank": 5,
+      "id": "comment-Li8udGVy",
+      "title": "Address DEPRECATED: value-discovery.js:783",
+      "type": "technical-debt",
+      "source": "code-comments",
+      "scores": {
+        "wsjf": 11,
+        "ice": 40.5,
+        "technicalDebt": 14,
+        "composite": 33.8
+      },
+      "effort": 2,
+      "impact": "medium",
+      "confidence": 0.9,
+      "files": [
+        "./.terragon/value-discovery.js"
+      ]
+    },
+    {
+      "rank": 6,
+      "id": "comment-Li8udGVy",
+      "title": "Address XXX: value-discovery.js:784",
+      "type": "technical-debt",
+      "source": "code-comments",
+      "scores": {
+        "wsjf": 11,
+        "ice": 16.2,
+        "technicalDebt": 14,
+        "composite": 33.8
+      },
+      "effort": 2,
+      "impact": "low",
+      "confidence": 0.9,
+      "files": [
+        "./.terragon/value-discovery.js"
+      ]
+    },
+    {
+      "rank": 7,
+      "id": "comment-Li8udGVy",
+      "title": "Address TODO: scheduler.js:549",
+      "type": "technical-debt",
+      "source": "code-comments",
+      "scores": {
+        "wsjf": 11,
+        "ice": 40.5,
+        "technicalDebt": 14,
+        "composite": 33.8
+      },
+      "effort": 2,
+      "impact": "medium",
+      "confidence": 0.9,
+      "files": [
+        "./.terragon/scheduler.js"
+      ]
+    },
+    {
+      "rank": 8,
+      "id": "comment-Li8udGVy",
+      "title": "Address TODO: value-discovery.js:134",
+      "type": "technical-debt",
+      "source": "code-comments",
+      "scores": {
+        "wsjf": 7.333333333333333,
+        "ice": 36,
+        "technicalDebt": 21,
+        "composite": 31.53
+      },
+      "effort": 3,
+      "impact": "medium",
+      "confidence": 0.9,
+      "files": [
+        "./.terragon/value-discovery.js"
+      ]
+    },
+    {
+      "rank": 9,
+      "id": "comment-Li8udGVy",
+      "title": "Address TODO: value-discovery.js:141",
+      "type": "technical-debt",
+      "source": "code-comments",
+      "scores": {
+        "wsjf": 7.333333333333333,
+        "ice": 36,
+        "technicalDebt": 21,
+        "composite": 31.53
+      },
+      "effort": 3,
+      "impact": "medium",
+      "confidence": 0.9,
+      "files": [
+        "./.terragon/value-discovery.js"
+      ]
+    },
+    {
+      "rank": 10,
+      "id": "comment-Li8udGVy",
+      "title": "Address TODO: value-discovery.js:147",
+      "type": "technical-debt",
+      "source": "code-comments",
+      "scores": {
+        "wsjf": 7.333333333333333,
+        "ice": 36,
+        "technicalDebt": 21,
+        "composite": 31.53
+      },
+      "effort": 3,
+      "impact": "medium",
+      "confidence": 0.9,
+      "files": [
+        "./.terragon/value-discovery.js"
+      ]
+    },
+    {
+      "rank": 11,
+      "id": "comment-Li8udGVy",
+      "title": "Address FIXME: value-discovery.js:779",
+      "type": "technical-debt",
+      "source": "code-comments",
+      "scores": {
+        "wsjf": 7.333333333333333,
+        "ice": 57.6,
+        "technicalDebt": 21,
+        "composite": 31.53
+      },
+      "effort": 3,
+      "impact": "high",
+      "confidence": 0.9,
+      "files": [
+        "./.terragon/value-discovery.js"
+      ]
+    },
+    {
+      "rank": 12,
+      "id": "git-d6cd1d9",
+      "title": "Review quick fix: feat: implement comprehensive SDLC automation infrastructure",
+      "type": "technical-debt",
+      "source": "git-history",
+      "scores": {
+        "wsjf": 5.5,
+        "ice": 24.5,
+        "technicalDebt": 28,
+        "composite": 31.1
+      },
+      "effort": 4,
+      "impact": "medium",
+      "confidence": 0.7,
+      "files": []
+    },
+    {
+      "rank": 13,
+      "id": "git-5753c95",
+      "title": "Review quick fix: docs: add workflow requirements and issue templates",
+      "type": "technical-debt",
+      "source": "git-history",
+      "scores": {
+        "wsjf": 5.5,
+        "ice": 24.5,
+        "technicalDebt": 28,
+        "composite": 31.1
+      },
+      "effort": 4,
+      "impact": "medium",
+      "confidence": 0.7,
+      "files": []
+    },
+    {
+      "rank": 14,
+      "id": "git-3fdfe03",
+      "title": "Review quick fix: docs: add community and development documentation",
+      "type": "technical-debt",
+      "source": "git-history",
+      "scores": {
+        "wsjf": 5.5,
+        "ice": 24.5,
+        "technicalDebt": 28,
+        "composite": 31.1
+      },
+      "effort": 4,
+      "impact": "medium",
+      "confidence": 0.7,
+      "files": []
+    },
+    {
+      "rank": 15,
+      "id": "git-e60d6c2",
+      "title": "Review quick fix: feat: complete comprehensive SDLC implementation (Checkpoints 1-3)",
+      "type": "technical-debt",
+      "source": "git-history",
+      "scores": {
+        "wsjf": 5.5,
+        "ice": 24.5,
+        "technicalDebt": 28,
+        "composite": 31.1
+      },
+      "effort": 4,
+      "impact": "medium",
+      "confidence": 0.7,
+      "files": []
+    },
+    {
+      "rank": 16,
+      "id": "git-5f09572",
+      "title": "Review quick fix: test: establish comprehensive testing infrastructure",
+      "type": "technical-debt",
+      "source": "git-history",
+      "scores": {
+        "wsjf": 5.5,
+        "ice": 24.5,
+        "technicalDebt": 28,
+        "composite": 31.1
+      },
+      "effort": 4,
+      "impact": "medium",
+      "confidence": 0.7,
+      "files": []
+    },
+    {
+      "rank": 17,
+      "id": "git-ec79573",
+      "title": "Review quick fix: docs: establish project foundation and community files",
+      "type": "technical-debt",
+      "source": "git-history",
+      "scores": {
+        "wsjf": 5.5,
+        "ice": 24.5,
+        "technicalDebt": 28,
+        "composite": 31.1
+      },
+      "effort": 4,
+      "impact": "medium",
+      "confidence": 0.7,
+      "files": []
+    },
+    {
+      "rank": 18,
+      "id": "comment-Li8udGVy",
+      "title": "Address TODO: scheduler.js:553",
+      "type": "technical-debt",
+      "source": "code-comments",
+      "scores": {
+        "wsjf": 5.5,
+        "ice": 31.5,
+        "technicalDebt": 28,
+        "composite": 31.1
+      },
+      "effort": 4,
+      "impact": "medium",
+      "confidence": 0.9,
+      "files": [
+        "./.terragon/scheduler.js"
+      ]
+    },
+    {
+      "rank": 19,
+      "id": "comment-Li8udGVy",
+      "title": "Address TODO: scheduler.js:603",
+      "type": "technical-debt",
+      "source": "code-comments",
+      "scores": {
+        "wsjf": 5.5,
+        "ice": 31.5,
+        "technicalDebt": 28,
+        "composite": 31.1
+      },
+      "effort": 4,
+      "impact": "medium",
+      "confidence": 0.9,
+      "files": [
+        "./.terragon/scheduler.js"
+      ]
+    },
+    {
+      "rank": 20,
+      "id": "sec-docker",
+      "title": "Enhance Docker security configuration",
+      "type": "security-enhancement",
+      "source": "docker-analysis",
+      "scores": {
+        "wsjf": 6.5,
+        "ice": 28,
+        "technicalDebt": 12,
+        "composite": 30.9
+      },
+      "effort": 4,
+      "impact": "medium",
+      "confidence": 0.8,
+      "files": [
+        "Dockerfile",
+        "docker-compose.yml"
+      ]
+    }
+  ],
+  "categoryBreakdown": {
+    "performance": 1,
+    "technical-debt": 18,
+    "security-enhancement": 1,
+    "testing": 2,
+    "documentation": 2
+  },
+  "valueMetrics": {
+    "totalPotentialValue": 739,
+    "highValueItems": 0,
+    "securityItems": 1,
+    "averageEffort": "3.1",
+    "estimatedWeeksToComplete": 2
+  }
+}

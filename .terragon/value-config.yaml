@@ -1,0 +1,95 @@
+scoring:
+  weights:
+    maturing:  # Current repository maturity level (65%)
+      wsjf: 0.5
+      ice: 0.2
+      technicalDebt: 0.2
+      security: 0.1
+      
+    # Future weights for different maturity levels
+    nascent:
+      wsjf: 0.4
+      ice: 0.3
+      technicalDebt: 0.2
+      security: 0.1
+    developing:
+      wsjf: 0.5
+      ice: 0.2
+      technicalDebt: 0.2
+      security: 0.1
+    advanced:
+      wsjf: 0.5
+      ice: 0.1
+      technicalDebt: 0.3
+      security: 0.1
+  
+  thresholds:
+    minScore: 15.0
+    maxRisk: 0.8
+    securityBoost: 2.0
+    complianceBoost: 1.8
+    performanceBoost: 1.5
+    documentationPenalty: 0.6
+
+discovery:
+  sources:
+    - gitHistory
+    - staticAnalysis
+    - issueTrackers
+    - vulnerabilityDatabases
+    - performanceMonitoring
+    - userFeedback
+    - codeComments
+    - testCoverage
+  
+  tools:
+    staticAnalysis:
+      - eslint
+      - typescript
+      - sonarqube
+      - codeql
+    security:
+      - snyk
+      - dependabot
+      - trivy
+      - gitguardian
+    performance:
+      - lighthouse
+      - k6
+      - clinic
+    testing:
+      - jest
+      - playwright
+      - pytest
+
+execution:
+  maxConcurrentTasks: 1
+  testRequirements:
+    minCoverage: 80
+    performanceRegression: 5
+    securityGate: true
+  rollbackTriggers:
+    - testFailure
+    - buildFailure
+    - securityViolation
+    - performanceRegression
+  
+  schedules:
+    immediate: "after PR merge"
+    hourly: "security scans"
+    daily: "comprehensive analysis"
+    weekly: "deep SDLC assessment"
+    monthly: "strategic recalibration"
+
+maturity:
+  current: "maturing"
+  level: 65
+  target: 85
+  
+  capabilities:
+    documentation: 85
+    testing: 80
+    security: 75
+    cicd: 60
+    monitoring: 70
+    compliance: 65
