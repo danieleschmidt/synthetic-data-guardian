@@ -1,0 +1,237 @@
+# =============================================================================
+# Docker ignore file for Synthetic Data Guardian
+# =============================================================================
+
+# Documentation
+*.md
+docs/
+.github/
+LICENSE
+CHANGELOG.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Development files
+.vscode/
+.devcontainer/
+.env.local
+.env.development
+.env.test
+*.env.local
+
+# Dependencies
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.nyc_output
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.build/
+target/
+out/
+.next/
+.nuxt/
+
+# Testing
+tests/
+test/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+jest.config.*
+pytest.ini
+.coverage
+coverage/
+test-results.xml
+coverage.xml
+
+# IDE files
+*.swp
+*.swo
+*~
+.DS_Store
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.Spotlight-V100
+.Trashes
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+.temp/
+.tmp/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+.grunt/
+lib-cov/
+
+# Development tools
+.eslintcache
+.stylelintcache
+.sass-cache/
+.parcel-cache/
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+poetry.lock
+
+# Environment files (except production example)
+.env*
+!.env.example
+
+# Security files
+.secrets.baseline
+.pre-commit-config.yaml
+
+# Deployment files
+docker-compose*.yml
+!docker-compose.yml
+Dockerfile.dev
+k8s/
+helm/
+terraform/
+ansible/
+
+# Monitoring and observability
+monitoring/
+prometheus/
+grafana/
+
+# Machine learning models (large files)
+*.h5
+*.pkl
+*.joblib
+*.model
+models/
+checkpoints/
+
+# Data files
+data/
+datasets/
+*.csv
+*.json
+!package.json
+!tsconfig.json
+*.parquet
+*.avro
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# MacOS
+.AppleDouble
+.LSOverride
+Icon
+
+# Windows
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Linux
+*~
+
+# Vim
+*.swp
+*.swo
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Application specific
+synthetic-data/
+output/
+results/
+reports/
