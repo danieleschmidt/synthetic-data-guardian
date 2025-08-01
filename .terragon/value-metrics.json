@@ -1,0 +1,100 @@
+{
+  "executionHistory": [
+    {
+      "timestamp": "2025-08-01T14:33:20.937Z",
+      "discoveryRun": "initial",
+      "itemsDiscovered": 21,
+      "averageScore": 30.62,
+      "highValueItems": 0,
+      "securityItems": 1,
+      "topCategories": {
+        "technical-debt": 15,
+        "testing": 2,
+        "documentation": 2,
+        "performance": 1,
+        "security-enhancement": 1
+      },
+      "maturityLevel": 65,
+      "estimatedValue": 643,
+      "learnings": "Initial discovery shows significant technical debt from rapid development phase"
+    }
+  ],
+  "backlogMetrics": {
+    "totalItems": 21,
+    "averageAge": 0,
+    "debtRatio": 0.71,
+    "velocityTrend": "baseline",
+    "completionRate": 0,
+    "averageScore": 30.62,
+    "scoreDistribution": {
+      "high": 0,
+      "medium": 21,
+      "low": 0
+    }
+  },
+  "valueDelivery": {
+    "totalValueDelivered": 0,
+    "itemsCompleted": 0,
+    "averageCycleTime": 0,
+    "successRate": 1.0,
+    "rollbackRate": 0,
+    "qualityGatePassRate": 1.0
+  },
+  "scoringAccuracy": {
+    "predictionAccuracy": 1.0,
+    "effortEstimationAccuracy": 1.0,
+    "impactAssessmentAccuracy": 1.0,
+    "confidenceCalibration": 0.76,
+    "adaptationCycles": 1
+  },
+  "repositoryHealth": {
+    "codeQualityTrend": "stable",
+    "securityPosture": 75,
+    "testCoverage": 80,
+    "documentationCoverage": 85,
+    "dependencyHealth": 85,
+    "performanceBaseline": {
+      "buildTime": "unknown",
+      "testExecutionTime": "unknown",
+      "bundleSize": "unknown"
+    }
+  },
+  "continuousImprovement": {
+    "discoveryEfficiency": 21,
+    "scoringEvolution": "v1.0",
+    "patternRecognition": {
+      "repeatingIssues": [],
+      "hotspotFiles": [
+        ".terragon/value-discovery.js"
+      ],
+      "commonCategories": [
+        "technical-debt",
+        "testing",
+        "documentation"
+      ]
+    },
+    "automationOpportunities": [
+      "TypeScript error auto-fixing",
+      "Test generation for uncovered files",
+      "Documentation updates"
+    ]
+  },
+  "strategicAlignment": {
+    "maturityProgression": {
+      "current": 65,
+      "target": 85,
+      "progressRate": 0,
+      "blockers": [
+        "Technical debt accumulation",
+        "Missing performance monitoring",
+        "Security configuration gaps"
+      ]
+    },
+    "businessValue": {
+      "riskReduction": "medium",
+      "operationalEfficiency": "medium",
+      "complianceReadiness": "high",
+      "innovationEnablement": "medium"
+    }
+  }
+}

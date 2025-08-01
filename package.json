@@ -28,7 +28,12 @@
     "security:audit": "npm audit && snyk test",
     "security:scan": "trivy fs .",
     "prepare": "husky install",
-    "semantic-release": "semantic-release"
+    "semantic-release": "semantic-release",
+    "terragon:discover": "node .terragon/value-discovery.js",
+    "terragon:execute": "node .terragon/scheduler.js",
+    "terragon:schedule": "node .terragon/scheduler.js daily",
+    "terragon:security": "node .terragon/scheduler.js hourly",
+    "terragon:weekly": "node .terragon/scheduler.js weekly"
   },
   "keywords": [
     "synthetic-data",
@@ -60,16 +65,17 @@
     "npm": ">=8.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.38.1",
     "@types/jest": "^29.5.5",
     "@types/node": "^20.6.3",
     "@typescript-eslint/eslint-plugin": "^6.7.2",
     "@typescript-eslint/parser": "^6.7.2",
-    "@playwright/test": "^1.38.1",
     "eslint": "^8.50.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-security": "^1.7.1",
     "husky": "^8.0.3",
     "jest": "^29.7.0",
+    "js-yaml": "^4.1.0",
     "lint-staged": "^14.0.1",
     "nodemon": "^3.0.1",
     "prettier": "^3.0.3",
@@ -78,12 +84,12 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "express": "^4.18.2",
     "cors": "^2.8.5",
-    "helmet": "^7.0.0",
-    "winston": "^3.10.0",
     "dotenv": "^16.3.1",
-    "joi": "^17.10.2"
+    "express": "^4.18.2",
+    "helmet": "^7.0.0",
+    "joi": "^17.10.2",
+    "winston": "^3.10.0"
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx}": [

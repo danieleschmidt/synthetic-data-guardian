@@ -1,0 +1,565 @@
+[
+  {
+    "id": "perf-monitoring",
+    "title": "Enhance performance monitoring",
+    "type": "performance",
+    "source": "performance-tests",
+    "description": "Add more comprehensive performance benchmarks",
+    "effort": 6,
+    "impact": "medium",
+    "confidence": 0.7,
+    "files": [
+      "tests/performance/"
+    ],
+    "metadata": {
+      "type": "monitoring-enhancement"
+    },
+    "scores": {
+      "wsjf": 3.5,
+      "ice": 17.5,
+      "technicalDebt": 18,
+      "composite": 40.65
+    }
+  },
+  {
+    "id": "comment-Li8udGVy",
+    "title": "Address BUG: value-discovery.js:780",
+    "type": "technical-debt",
+    "source": "code-comments",
+    "description": "'BUG': 'high',",
+    "effort": 2,
+    "impact": "high",
+    "confidence": 0.9,
+    "files": [
+      "./.terragon/value-discovery.js"
+    ],
+    "metadata": {
+      "file": "./.terragon/value-discovery.js",
+      "line": 780,
+      "marker": "BUG",
+      "comment": "      'BUG': 'high', "
+    },
+    "scores": {
+      "wsjf": 11,
+      "ice": 64.8,
+      "technicalDebt": 14,
+      "composite": 33.8
+    }
+  },
+  {
+    "id": "comment-Li8udGVy",
+    "title": "Address HACK: value-discovery.js:781",
+    "type": "technical-debt",
+    "source": "code-comments",
+    "description": "'HACK': 'medium',",
+    "effort": 2,
+    "impact": "medium",
+    "confidence": 0.9,
+    "files": [
+      "./.terragon/value-discovery.js"
+    ],
+    "metadata": {
+      "file": "./.terragon/value-discovery.js",
+      "line": 781,
+      "marker": "HACK",
+      "comment": "      'HACK': 'medium',"
+    },
+    "scores": {
+      "wsjf": 11,
+      "ice": 40.5,
+      "technicalDebt": 14,
+      "composite": 33.8
+    }
+  },
+  {
+    "id": "comment-Li8udGVy",
+    "title": "Address TODO: value-discovery.js:782",
+    "type": "technical-debt",
+    "source": "code-comments",
+    "description": "'TODO': 'medium',",
+    "effort": 2,
+    "impact": "medium",
+    "confidence": 0.9,
+    "files": [
+      "./.terragon/value-discovery.js"
+    ],
+    "metadata": {
+      "file": "./.terragon/value-discovery.js",
+      "line": 782,
+      "marker": "TODO",
+      "comment": "      'TODO': 'medium',"
+    },
+    "scores": {
+      "wsjf": 11,
+      "ice": 40.5,
+      "technicalDebt": 14,
+      "composite": 33.8
+    }
+  },
+  {
+    "id": "comment-Li8udGVy",
+    "title": "Address DEPRECATED: value-discovery.js:783",
+    "type": "technical-debt",
+    "source": "code-comments",
+    "description": "'DEPRECATED': 'medium',",
+    "effort": 2,
+    "impact": "medium",
+    "confidence": 0.9,
+    "files": [
+      "./.terragon/value-discovery.js"
+    ],
+    "metadata": {
+      "file": "./.terragon/value-discovery.js",
+      "line": 783,
+      "marker": "DEPRECATED",
+      "comment": "      'DEPRECATED': 'medium',"
+    },
+    "scores": {
+      "wsjf": 11,
+      "ice": 40.5,
+      "technicalDebt": 14,
+      "composite": 33.8
+    }
+  },
+  {
+    "id": "comment-Li8udGVy",
+    "title": "Address XXX: value-discovery.js:784",
+    "type": "technical-debt",
+    "source": "code-comments",
+    "description": "'XXX': 'low'",
+    "effort": 2,
+    "impact": "low",
+    "confidence": 0.9,
+    "files": [
+      "./.terragon/value-discovery.js"
+    ],
+    "metadata": {
+      "file": "./.terragon/value-discovery.js",
+      "line": 784,
+      "marker": "XXX",
+      "comment": "      'XXX': 'low'"
+    },
+    "scores": {
+      "wsjf": 11,
+      "ice": 16.2,
+      "technicalDebt": 14,
+      "composite": 33.8
+    }
+  },
+  {
+    "id": "comment-Li8udGVy",
+    "title": "Address TODO: scheduler.js:549",
+    "type": "technical-debt",
+    "source": "code-comments",
+    "description": "// TODO: Import and test ${moduleName}",
+    "effort": 2,
+    "impact": "medium",
+    "confidence": 0.9,
+    "files": [
+      "./.terragon/scheduler.js"
+    ],
+    "metadata": {
+      "file": "./.terragon/scheduler.js",
+      "line": 549,
+      "marker": "TODO",
+      "comment": "    // TODO: Import and test ${moduleName}"
+    },
+    "scores": {
+      "wsjf": 11,
+      "ice": 40.5,
+      "technicalDebt": 14,
+      "composite": 33.8
+    }
+  },
+  {
+    "id": "comment-Li8udGVy",
+    "title": "Address TODO: value-discovery.js:134",
+    "type": "technical-debt",
+    "source": "code-comments",
+    "description": "* Parse code comments for TODO, FIXME, HACK, etc.",
+    "effort": 3,
+    "impact": "medium",
+    "confidence": 0.9,
+    "files": [
+      "./.terragon/value-discovery.js"
+    ],
+    "metadata": {
+      "file": "./.terragon/value-discovery.js",
+      "line": 134,
+      "marker": "TODO",
+      "comment": "   * Parse code comments for TODO, FIXME, HACK, etc."
+    },
+    "scores": {
+      "wsjf": 7.333333333333333,
+      "ice": 36,
+      "technicalDebt": 21,
+      "composite": 31.53
+    }
+  },
+  {
+    "id": "comment-Li8udGVy",
+    "title": "Address TODO: value-discovery.js:141",
+    "type": "technical-debt",
+    "source": "code-comments",
+    "description": "const debtMarkers = execSync('find . -type f \\\\( -name \"*.js\" -o -name \"*.ts\" -o -name \"*.py\" \\\\) -not -path \"./node_modules/*\" -not -path \"./.git/*\" | xargs grep -Hn \"TODO\\\\|FIXME\\\\|HACK\\\\|BUG\\\\|DEPRECATED\\\\|XXX\" | head -20', { encoding: 'utf8' });",
+    "effort": 3,
+    "impact": "medium",
+    "confidence": 0.9,
+    "files": [
+      "./.terragon/value-discovery.js"
+    ],
+    "metadata": {
+      "file": "./.terragon/value-discovery.js",
+      "line": 141,
+      "marker": "TODO",
+      "comment": "      const debtMarkers = execSync('find . -type f \\\\( -name \"*.js\" -o -name \"*.ts\" -o -name \"*.py\" \\\\) -not -path \"./node_modules/*\" -not -path \"./.git/*\" | xargs grep -Hn \"TODO\\\\|FIXME\\\\|HACK\\\\|BUG\\\\|DEPRECATED\\\\|XXX\" | head -20', { encoding: 'utf8' });"
+    },
+    "scores": {
+      "wsjf": 7.333333333333333,
+      "ice": 36,
+      "technicalDebt": 21,
+      "composite": 31.53
+    }
+  },
+  {
+    "id": "comment-Li8udGVy",
+    "title": "Address TODO: value-discovery.js:147",
+    "type": "technical-debt",
+    "source": "code-comments",
+    "description": "const marker = comment.match(/(TODO|FIXME|HACK|BUG|DEPRECATED|XXX)/i);",
+    "effort": 3,
+    "impact": "medium",
+    "confidence": 0.9,
+    "files": [
+      "./.terragon/value-discovery.js"
+    ],
+    "metadata": {
+      "file": "./.terragon/value-discovery.js",
+      "line": 147,
+      "marker": "TODO",
+      "comment": "          const marker = comment.match(/(TODO|FIXME|HACK|BUG|DEPRECATED|XXX)/i);"
+    },
+    "scores": {
+      "wsjf": 7.333333333333333,
+      "ice": 36,
+      "technicalDebt": 21,
+      "composite": 31.53
+    }
+  },
+  {
+    "id": "comment-Li8udGVy",
+    "title": "Address FIXME: value-discovery.js:779",
+    "type": "technical-debt",
+    "source": "code-comments",
+    "description": "'FIXME': 'high',",
+    "effort": 3,
+    "impact": "high",
+    "confidence": 0.9,
+    "files": [
+      "./.terragon/value-discovery.js"
+    ],
+    "metadata": {
+      "file": "./.terragon/value-discovery.js",
+      "line": 779,
+      "marker": "FIXME",
+      "comment": "      'FIXME': 'high',"
+    },
+    "scores": {
+      "wsjf": 7.333333333333333,
+      "ice": 57.6,
+      "technicalDebt": 21,
+      "composite": 31.53
+    }
+  },
+  {
+    "id": "git-d6cd1d9",
+    "title": "Review quick fix: feat: implement comprehensive SDLC automation infrastructure",
+    "type": "technical-debt",
+    "source": "git-history",
+    "description": "Quick fix commit may need proper solution: feat: implement comprehensive SDLC automation infrastructure",
+    "effort": 4,
+    "impact": "medium",
+    "confidence": 0.7,
+    "files": [],
+    "metadata": {
+      "commit": "d6cd1d9",
+      "message": "feat: implement comprehensive SDLC automation infrastructure"
+    },
+    "scores": {
+      "wsjf": 5.5,
+      "ice": 24.5,
+      "technicalDebt": 28,
+      "composite": 31.1
+    }
+  },
+  {
+    "id": "git-5753c95",
+    "title": "Review quick fix: docs: add workflow requirements and issue templates",
+    "type": "technical-debt",
+    "source": "git-history",
+    "description": "Quick fix commit may need proper solution: docs: add workflow requirements and issue templates",
+    "effort": 4,
+    "impact": "medium",
+    "confidence": 0.7,
+    "files": [],
+    "metadata": {
+      "commit": "5753c95",
+      "message": "docs: add workflow requirements and issue templates"
+    },
+    "scores": {
+      "wsjf": 5.5,
+      "ice": 24.5,
+      "technicalDebt": 28,
+      "composite": 31.1
+    }
+  },
+  {
+    "id": "git-3fdfe03",
+    "title": "Review quick fix: docs: add community and development documentation",
+    "type": "technical-debt",
+    "source": "git-history",
+    "description": "Quick fix commit may need proper solution: docs: add community and development documentation",
+    "effort": 4,
+    "impact": "medium",
+    "confidence": 0.7,
+    "files": [],
+    "metadata": {
+      "commit": "3fdfe03",
+      "message": "docs: add community and development documentation"
+    },
+    "scores": {
+      "wsjf": 5.5,
+      "ice": 24.5,
+      "technicalDebt": 28,
+      "composite": 31.1
+    }
+  },
+  {
+    "id": "git-e60d6c2",
+    "title": "Review quick fix: feat: complete comprehensive SDLC implementation (Checkpoints 1-3)",
+    "type": "technical-debt",
+    "source": "git-history",
+    "description": "Quick fix commit may need proper solution: feat: complete comprehensive SDLC implementation (Checkpoints 1-3)",
+    "effort": 4,
+    "impact": "medium",
+    "confidence": 0.7,
+    "files": [],
+    "metadata": {
+      "commit": "e60d6c2",
+      "message": "feat: complete comprehensive SDLC implementation (Checkpoints 1-3)"
+    },
+    "scores": {
+      "wsjf": 5.5,
+      "ice": 24.5,
+      "technicalDebt": 28,
+      "composite": 31.1
+    }
+  },
+  {
+    "id": "git-5f09572",
+    "title": "Review quick fix: test: establish comprehensive testing infrastructure",
+    "type": "technical-debt",
+    "source": "git-history",
+    "description": "Quick fix commit may need proper solution: test: establish comprehensive testing infrastructure",
+    "effort": 4,
+    "impact": "medium",
+    "confidence": 0.7,
+    "files": [],
+    "metadata": {
+      "commit": "5f09572",
+      "message": "test: establish comprehensive testing infrastructure"
+    },
+    "scores": {
+      "wsjf": 5.5,
+      "ice": 24.5,
+      "technicalDebt": 28,
+      "composite": 31.1
+    }
+  },
+  {
+    "id": "git-ec79573",
+    "title": "Review quick fix: docs: establish project foundation and community files",
+    "type": "technical-debt",
+    "source": "git-history",
+    "description": "Quick fix commit may need proper solution: docs: establish project foundation and community files",
+    "effort": 4,
+    "impact": "medium",
+    "confidence": 0.7,
+    "files": [],
+    "metadata": {
+      "commit": "ec79573",
+      "message": "docs: establish project foundation and community files"
+    },
+    "scores": {
+      "wsjf": 5.5,
+      "ice": 24.5,
+      "technicalDebt": 28,
+      "composite": 31.1
+    }
+  },
+  {
+    "id": "comment-Li8udGVy",
+    "title": "Address TODO: scheduler.js:553",
+    "type": "technical-debt",
+    "source": "code-comments",
+    "description": "// TODO: Add specific test cases",
+    "effort": 4,
+    "impact": "medium",
+    "confidence": 0.9,
+    "files": [
+      "./.terragon/scheduler.js"
+    ],
+    "metadata": {
+      "file": "./.terragon/scheduler.js",
+      "line": 553,
+      "marker": "TODO",
+      "comment": "  // TODO: Add specific test cases"
+    },
+    "scores": {
+      "wsjf": 5.5,
+      "ice": 31.5,
+      "technicalDebt": 28,
+      "composite": 31.1
+    }
+  },
+  {
+    "id": "comment-Li8udGVy",
+    "title": "Address TODO: scheduler.js:603",
+    "type": "technical-debt",
+    "source": "code-comments",
+    "description": "return sections[section] || `## ${section}\\n\\nTODO: Add ${section} documentation`;",
+    "effort": 4,
+    "impact": "medium",
+    "confidence": 0.9,
+    "files": [
+      "./.terragon/scheduler.js"
+    ],
+    "metadata": {
+      "file": "./.terragon/scheduler.js",
+      "line": 603,
+      "marker": "TODO",
+      "comment": "    return sections[section] || `## ${section}\\n\\nTODO: Add ${section} documentation`;"
+    },
+    "scores": {
+      "wsjf": 5.5,
+      "ice": 31.5,
+      "technicalDebt": 28,
+      "composite": 31.1
+    }
+  },
+  {
+    "id": "sec-docker",
+    "title": "Enhance Docker security configuration",
+    "type": "security-enhancement",
+    "source": "docker-analysis",
+    "description": "Review and harden Docker configuration for production",
+    "effort": 4,
+    "impact": "medium",
+    "confidence": 0.8,
+    "files": [
+      "Dockerfile",
+      "docker-compose.yml"
+    ],
+    "metadata": {
+      "type": "container-security"
+    },
+    "scores": {
+      "wsjf": 6.5,
+      "ice": 28,
+      "technicalDebt": 12,
+      "composite": 30.9
+    }
+  },
+  {
+    "id": "test-c3JjL21p",
+    "title": "Add tests for metrics.ts",
+    "type": "testing",
+    "source": "coverage-analysis",
+    "description": "File lacks test coverage: src/middleware/metrics.ts",
+    "effort": 3,
+    "impact": "medium",
+    "confidence": 0.8,
+    "files": [
+      "src/middleware/metrics.ts"
+    ],
+    "metadata": {
+      "file": "src/middleware/metrics.ts",
+      "type": "missing-tests"
+    },
+    "scores": {
+      "wsjf": 6,
+      "ice": 32,
+      "technicalDebt": 9,
+      "composite": 27.8
+    }
+  },
+  {
+    "id": "test-c3JjL3Jv",
+    "title": "Add tests for health.ts",
+    "type": "testing",
+    "source": "coverage-analysis",
+    "description": "File lacks test coverage: src/routes/health.ts",
+    "effort": 3,
+    "impact": "medium",
+    "confidence": 0.8,
+    "files": [
+      "src/routes/health.ts"
+    ],
+    "metadata": {
+      "file": "src/routes/health.ts",
+      "type": "missing-tests"
+    },
+    "scores": {
+      "wsjf": 6,
+      "ice": 32,
+      "technicalDebt": 9,
+      "composite": 27.8
+    }
+  },
+  {
+    "id": "readme-deployment",
+    "title": "Add Deployment section to README",
+    "type": "documentation",
+    "source": "readme-analysis",
+    "description": "README missing Deployment section",
+    "effort": 1,
+    "impact": "low",
+    "confidence": 0.9,
+    "files": [
+      "README.md"
+    ],
+    "metadata": {
+      "section": "Deployment",
+      "type": "readme-enhancement"
+    },
+    "scores": {
+      "wsjf": 10,
+      "ice": 18,
+      "technicalDebt": 3,
+      "composite": 18.36
+    }
+  },
+  {
+    "id": "doc-c3JjL3Jv",
+    "title": "Document API routes in health.ts",
+    "type": "documentation",
+    "source": "api-analysis",
+    "description": "API routes need OpenAPI/Swagger documentation: src/routes/health.ts",
+    "effort": 2,
+    "impact": "low",
+    "confidence": 0.7,
+    "files": [
+      "src/routes/health.ts"
+    ],
+    "metadata": {
+      "file": "src/routes/health.ts",
+      "type": "api-documentation"
+    },
+    "scores": {
+      "wsjf": 5,
+      "ice": 12.6,
+      "technicalDebt": 6,
+      "composite": 15.72
+    }
+  }
+]
