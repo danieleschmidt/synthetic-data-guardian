@@ -1,0 +1,188 @@
+{
+  "build": {
+    "enabled": true,
+    "commands": {
+      "npm": ["npm", "run", "build"],
+      "python": ["python", "setup.py", "build"],
+      "docker": ["docker", "build", "-t", "synthetic-data-guardian", "."]
+    },
+    "timeout": 300,
+    "parallel": false,
+    "cache_enabled": true
+  },
+  "tests": {
+    "enabled": true,
+    "commands": {
+      "npm": ["npm", "test"],
+      "npm_coverage": ["npm", "run", "test:coverage"],
+      "python": ["python", "-m", "pytest"],
+      "python_coverage": ["python", "-m", "pytest", "--cov"],
+      "integration": ["python", "-m", "pytest", "tests/integration/"],
+      "e2e": ["npm", "run", "test:e2e"]
+    },
+    "timeout": 600,
+    "parallel": true,
+    "fail_fast": false
+  },
+  "api": {
+    "enabled": false,
+    "base_url": "http://localhost:8080",
+    "startup_wait_seconds": 30,
+    "endpoints": [
+      {
+        "name": "health_check",
+        "path": "/health",
+        "method": "GET",
+        "expected_status": 200,
+        "timeout": 5
+      },
+      {
+        "name": "data_generation",
+        "path": "/api/v1/generate",
+        "method": "POST",
+        "payload": {
+          "schema": {
+            "columns": [
+              {"name": "id", "type": "integer"},
+              {"name": "name", "type": "string"},
+              {"name": "email", "type": "email"}
+            ]
+          },
+          "rows": 100
+        },
+        "expected_status": [200, 201, 202],
+        "timeout": 30
+      },
+      {
+        "name": "data_validation",
+        "path": "/api/v1/validate",
+        "method": "POST",
+        "payload": {
+          "data": [
+            {"id": 1, "name": "Test User", "email": "test@example.com"}
+          ],
+          "schema": {
+            "columns": [
+              {"name": "id", "type": "integer"},
+              {"name": "name", "type": "string"},
+              {"name": "email", "type": "email"}
+            ]
+          }
+        },
+        "expected_status": [200, 201],
+        "timeout": 15
+      },
+      {
+        "name": "watermarking",
+        "path": "/api/v1/watermark",
+        "method": "POST",
+        "payload": {
+          "data": [
+            {"id": 1, "value": 100.5}
+          ],
+          "watermark_key": "benchmark_test",
+          "strength": 0.1
+        },
+        "expected_status": [200, 201],
+        "timeout": 20
+      }
+    ],
+    "load_testing": {
+      "enabled": false,
+      "scenarios": [
+        {
+          "name": "light_load",
+          "concurrent_users": 10,
+          "duration_seconds": 60,
+          "ramp_up_seconds": 10
+        },
+        {
+          "name": "medium_load",
+          "concurrent_users": 50,
+          "duration_seconds": 120,
+          "ramp_up_seconds": 20
+        },
+        {
+          "name": "heavy_load",
+          "concurrent_users": 100,
+          "duration_seconds": 180,
+          "ramp_up_seconds": 30
+        }
+      ]
+    }
+  },
+  "memory": {
+    "enabled": true,
+    "heap_profile": false,
+    "monitoring_interval": 1.0,
+    "memory_limit_mb": 2048,
+    "tools": {
+      "valgrind": {
+        "enabled": false,
+        "tool": "memcheck"
+      },
+      "py_spy": {
+        "enabled": false,
+        "duration": 30
+      }
+    }
+  },
+  "database": {
+    "enabled": false,
+    "connection_string": "${DATABASE_URL}",
+    "benchmark_queries": [
+      {
+        "name": "simple_select",
+        "query": "SELECT COUNT(*) FROM synthetic_data",
+        "timeout": 5
+      },
+      {
+        "name": "complex_join",
+        "query": "SELECT sd.*, v.score FROM synthetic_data sd JOIN validations v ON sd.id = v.data_id LIMIT 100",
+        "timeout": 10
+      },
+      {
+        "name": "aggregate_query",
+        "query": "SELECT category, AVG(score), COUNT(*) FROM validations GROUP BY category",
+        "timeout": 15
+      }
+    ],
+    "connection_pool_size": 10
+  },
+  "thresholds": {
+    "build_time_seconds": 120,
+    "test_time_seconds": 300,
+    "api_response_time_ms": 500,
+    "database_query_time_ms": 100,
+    "cache_operation_time_ms": 10,
+    "memory_usage_mb": 1024,
+    "cpu_usage_percent": 80
+  },
+  "reporting": {
+    "enabled": true,
+    "formats": ["json", "html"],
+    "include_charts": true,
+    "benchmark_comparison": {
+      "enabled": true,
+      "baseline_file": "baseline_performance.json",
+      "variance_threshold_percent": 20
+    }
+  },
+  "automation": {
+    "schedule": {
+      "enabled": false,
+      "cron": "0 2 * * *",
+      "timezone": "UTC"
+    },
+    "triggers": {
+      "on_commit": true,
+      "on_release": true,
+      "on_schedule": false
+    },
+    "artifacts": {
+      "retention_days": 30,
+      "upload_to_s3": false,
+      "s3_bucket": "${PERFORMANCE_ARTIFACTS_BUCKET}"
+    }
+  }
+}

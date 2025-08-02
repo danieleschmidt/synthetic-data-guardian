@@ -1,0 +1,79 @@
+{
+  "github": {
+    "enabled": true,
+    "repository": "danieleschmidt/synthetic-data-guardian",
+    "api_version": "v3"
+  },
+  "sonarqube": {
+    "enabled": false,
+    "url": "",
+    "token": "",
+    "project_key": "synthetic-data-guardian"
+  },
+  "codecov": {
+    "enabled": false,
+    "token": "",
+    "repository": "danieleschmidt/synthetic-data-guardian"
+  },
+  "prometheus": {
+    "enabled": false,
+    "url": "http://localhost:9090",
+    "queries": {
+      "error_rate": "rate(http_requests_total{status=~\"5..\"}[5m])",
+      "response_time": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+      "memory_usage": "process_resident_memory_bytes"
+    }
+  },
+  "output": {
+    "format": "json",
+    "file": "metrics-report.json",
+    "include_timestamps": true,
+    "include_raw_data": false
+  },
+  "thresholds": {
+    "code_coverage": 80,
+    "test_pass_rate": 95,
+    "security_score": 85,
+    "performance_score": 80,
+    "maintainability_score": 75,
+    "technical_debt_score": 70
+  },
+  "collection_schedule": {
+    "enabled": true,
+    "interval_hours": 24,
+    "time_of_day": "02:00"
+  },
+  "alerts": {
+    "enabled": true,
+    "thresholds": {
+      "critical": {
+        "security_score": 60,
+        "test_pass_rate": 80,
+        "error_rate": 0.05
+      },
+      "warning": {
+        "security_score": 80,
+        "test_pass_rate": 90,
+        "error_rate": 0.01
+      }
+    },
+    "notification_channels": [
+      {
+        "type": "slack",
+        "webhook_url": "${SLACK_WEBHOOK_URL}",
+        "enabled": false
+      },
+      {
+        "type": "email",
+        "smtp_server": "${SMTP_SERVER}",
+        "recipients": ["team@synthetic-guardian.com"],
+        "enabled": false
+      }
+    ]
+  },
+  "retention": {
+    "keep_daily_reports": 30,
+    "keep_weekly_summaries": 12,
+    "keep_monthly_summaries": 24
+  }
+}

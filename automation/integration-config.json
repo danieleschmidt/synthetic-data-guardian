@@ -1,0 +1,328 @@
+{
+  "environment": {
+    "test_environment": "integration",
+    "timeout_seconds": 300,
+    "retry_attempts": 3,
+    "retry_delay_seconds": 5
+  },
+  "services": {
+    "api": {
+      "enabled": true,
+      "url": "${API_URL:-http://localhost:8080}",
+      "health_endpoint": "/health",
+      "startup_timeout": 60,
+      "dependencies": ["postgres", "redis"]
+    },
+    "postgres": {
+      "enabled": true,
+      "connection_string": "${DATABASE_URL:-postgresql://postgres:password@localhost:5432/synthetic_guardian_test}",
+      "host": "${DB_HOST:-localhost}",
+      "port": "${DB_PORT:-5432}",
+      "database": "${DB_NAME:-synthetic_guardian_test}",
+      "username": "${DB_USER:-postgres}",
+      "password": "${DB_PASSWORD:-password}",
+      "ssl_mode": "prefer",
+      "connection_timeout": 10
+    },
+    "redis": {
+      "enabled": true,
+      "connection_string": "${REDIS_URL:-redis://localhost:6379/0}",
+      "host": "${REDIS_HOST:-localhost}",
+      "port": "${REDIS_PORT:-6379}",
+      "database": 0,
+      "password": "${REDIS_PASSWORD:-}",
+      "connection_timeout": 5
+    },
+    "neo4j": {
+      "enabled": false,
+      "uri": "${NEO4J_URI:-bolt://localhost:7687}",
+      "username": "${NEO4J_USERNAME:-neo4j}",
+      "password": "${NEO4J_PASSWORD:-password}",
+      "database": "${NEO4J_DATABASE:-neo4j}",
+      "connection_timeout": 10
+    },
+    "elasticsearch": {
+      "enabled": false,
+      "url": "${ELASTICSEARCH_URL:-http://localhost:9200}",
+      "index_prefix": "synthetic_guardian_test",
+      "connection_timeout": 10
+    },
+    "minio": {
+      "enabled": false,
+      "endpoint": "${MINIO_ENDPOINT:-localhost:9000}",
+      "access_key": "${MINIO_ACCESS_KEY:-minioadmin}",
+      "secret_key": "${MINIO_SECRET_KEY:-minioadmin}",
+      "secure": false,
+      "bucket": "synthetic-data-test"
+    }
+  },
+  "tests": {
+    "service_health": {
+      "enabled": true,
+      "timeout": 30,
+      "required_services": ["api", "postgres", "redis"]
+    },
+    "api_integration": {
+      "enabled": true,
+      "timeout": 60,
+      "endpoints": [
+        {
+          "name": "health_check",
+          "path": "/health",
+          "method": "GET",
+          "expected_status": 200,
+          "timeout": 5
+        },
+        {
+          "name": "api_info",
+          "path": "/api/v1/info",
+          "method": "GET",
+          "expected_status": 200,
+          "timeout": 5
+        },
+        {
+          "name": "data_generation",
+          "path": "/api/v1/generate",
+          "method": "POST",
+          "payload": {
+            "schema": {
+              "columns": [
+                {"name": "user_id", "type": "integer", "min": 1, "max": 1000},
+                {"name": "email", "type": "email"},
+                {"name": "age", "type": "integer", "min": 18, "max": 80},
+                {"name": "created_at", "type": "datetime"}
+              ]
+            },
+            "rows": 10,
+            "format": "json"
+          },
+          "expected_status": [200, 201, 202],
+          "timeout": 30,
+          "validate_response": true
+        },
+        {
+          "name": "data_validation",
+          "path": "/api/v1/validate",
+          "method": "POST",
+          "payload": {
+            "data": [
+              {"user_id": 1, "email": "test@example.com", "age": 25, "created_at": "2024-01-01T00:00:00Z"},
+              {"user_id": 2, "email": "user@test.org", "age": 35, "created_at": "2024-01-02T00:00:00Z"}
+            ],
+            "schema": {
+              "columns": [
+                {"name": "user_id", "type": "integer"},
+                {"name": "email", "type": "email"},
+                {"name": "age", "type": "integer", "min": 18, "max": 80},
+                {"name": "created_at", "type": "datetime"}
+              ]
+            },
+            "validation_rules": ["email_format", "age_range", "datetime_format"]
+          },
+          "expected_status": [200, 201],
+          "timeout": 15,
+          "validate_response": true
+        },
+        {
+          "name": "watermarking",
+          "path": "/api/v1/watermark",
+          "method": "POST",
+          "payload": {
+            "data": [
+              {"id": 1, "value": 100.5, "category": "A"},
+              {"id": 2, "value": 200.3, "category": "B"}
+            ],
+            "watermark_config": {
+              "key": "integration_test_key",
+              "strength": 0.1,
+              "method": "additive"
+            }
+          },
+          "expected_status": [200, 201],
+          "timeout": 20,
+          "validate_response": true
+        },
+        {
+          "name": "lineage_tracking",
+          "path": "/api/v1/lineage",
+          "method": "POST",
+          "payload": {
+            "source_dataset": "integration_test_source",
+            "generated_dataset": "integration_test_generated",
+            "transformation": "synthetic_generation",
+            "metadata": {
+              "test": true,
+              "timestamp": "2024-01-01T00:00:00Z"
+            }
+          },
+          "expected_status": [200, 201],
+          "timeout": 10,
+          "validate_response": true
+        }
+      ]
+    },
+    "database_integration": {
+      "enabled": true,
+      "timeout": 60,
+      "tests": [
+        "connection_test",
+        "basic_crud_operations",
+        "transaction_test",
+        "concurrent_access_test",
+        "migration_test",
+        "constraint_validation_test"
+      ],
+      "test_data": {
+        "cleanup_after_test": true,
+        "use_transactions": true
+      }
+    },
+    "cache_integration": {
+      "enabled": true,
+      "timeout": 30,
+      "tests": [
+        "connection_test",
+        "basic_operations",
+        "expiration_test",
+        "pipeline_operations",
+        "pub_sub_test"
+      ]
+    },
+    "end_to_end": {
+      "enabled": true,
+      "timeout": 180,
+      "scenarios": [
+        {
+          "name": "complete_data_generation_workflow",
+          "steps": [
+            "submit_generation_request",
+            "monitor_generation_progress",
+            "retrieve_generated_data",
+            "validate_generated_data",
+            "apply_watermarking",
+            "track_data_lineage"
+          ],
+          "cleanup": true
+        },
+        {
+          "name": "data_quality_workflow",
+          "steps": [
+            "upload_sample_data",
+            "run_quality_assessment",
+            "generate_quality_report",
+            "apply_quality_improvements",
+            "validate_improvements"
+          ],
+          "cleanup": true
+        },
+        {
+          "name": "privacy_preservation_workflow",
+          "steps": [
+            "analyze_privacy_risks",
+            "apply_privacy_techniques",
+            "validate_privacy_preservation",
+            "generate_privacy_report"
+          ],
+          "cleanup": true
+        }
+      ]
+    }
+  },
+  "performance": {
+    "enabled": true,
+    "thresholds": {
+      "api_response_time_ms": 1000,
+      "database_query_time_ms": 500,
+      "cache_operation_time_ms": 50,
+      "end_to_end_workflow_time_seconds": 60
+    },
+    "load_testing": {
+      "enabled": false,
+      "concurrent_users": [1, 5, 10],
+      "test_duration_seconds": 30,
+      "ramp_up_seconds": 5
+    }
+  },
+  "data_management": {
+    "test_data": {
+      "generation": {
+        "enabled": true,
+        "seed": 12345,
+        "datasets": {
+          "users": {
+            "rows": 100,
+            "schema": {
+              "columns": [
+                {"name": "id", "type": "integer", "primary_key": true},
+                {"name": "email", "type": "email", "unique": true},
+                {"name": "age", "type": "integer", "min": 18, "max": 80},
+                {"name": "created_at", "type": "datetime"}
+              ]
+            }
+          },
+          "transactions": {
+            "rows": 500,
+            "schema": {
+              "columns": [
+                {"name": "id", "type": "integer", "primary_key": true},
+                {"name": "user_id", "type": "integer", "foreign_key": "users.id"},
+                {"name": "amount", "type": "decimal", "precision": 10, "scale": 2},
+                {"name": "timestamp", "type": "datetime"}
+              ]
+            }
+          }
+        }
+      },
+      "cleanup": {
+        "enabled": true,
+        "strategy": "truncate",
+        "preserve_schema": true
+      }
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "metrics": {
+      "collect_system_metrics": true,
+      "collect_application_metrics": true,
+      "metric_interval_seconds": 5
+    },
+    "logging": {
+      "level": "INFO",
+      "capture_logs": true,
+      "log_file": "integration_test.log"
+    },
+    "alerts": {
+      "enabled": false,
+      "notification_channels": [
+        {
+          "type": "slack",
+          "webhook_url": "${SLACK_WEBHOOK_URL}",
+          "enabled": false
+        }
+      ]
+    }
+  },
+  "reporting": {
+    "enabled": true,
+    "formats": ["json", "junit"],
+    "output_directory": "test-results/integration",
+    "include_performance_metrics": true,
+    "include_logs": true,
+    "screenshot_on_failure": false
+  },
+  "docker": {
+    "enabled": false,
+    "compose_file": "docker-compose.test.yml",
+    "services": ["postgres", "redis", "api"],
+    "startup_timeout": 120,
+    "cleanup_after_test": true
+  },
+  "kubernetes": {
+    "enabled": false,
+    "namespace": "synthetic-guardian-test",
+    "manifests_directory": "k8s/test",
+    "wait_for_ready": true,
+    "cleanup_after_test": true
+  }
+}
