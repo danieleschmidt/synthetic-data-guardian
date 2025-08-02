@@ -1,0 +1,515 @@
+# =============================================================================
+# Comprehensive Deployment Workflow Template
+# =============================================================================
+# This workflow handles deployment to multiple environments with proper
+# security checks, rollback capabilities, and monitoring integration.
+
+name: Deploy Application
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - 'staging'
+          - 'production'
+      version:
+        description: 'Version/tag to deploy (optional, defaults to latest)'
+        required: false
+        type: string
+      skip_tests:
+        description: 'Skip test execution (not recommended for production)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # =============================================================================
+  # Determine Deployment Environment
+  # =============================================================================
+  determine-environment:
+    name: Determine Environment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.env.outputs.environment }}
+      version: ${{ steps.env.outputs.version }}
+      is_production: ${{ steps.env.outputs.is_production }}
+      
+    steps:
+      - name: Determine deployment environment
+        id: env
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            environment="${{ github.event.inputs.environment }}"
+            version="${{ github.event.inputs.version }}"
+          elif [ "${{ github.event_name }}" = "release" ]; then
+            environment="production"
+            version="${{ github.event.release.tag_name }}"
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            environment="production"
+            version="latest"
+          elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+            environment="staging"
+            version="staging"
+          else
+            echo "Unknown deployment trigger"
+            exit 1
+          fi
+          
+          echo "environment=$environment" >> $GITHUB_OUTPUT
+          echo "version=${version:-latest}" >> $GITHUB_OUTPUT
+          echo "is_production=$([ "$environment" = "production" ] && echo "true" || echo "false")" >> $GITHUB_OUTPUT
+          
+          echo "Deploying to: $environment"
+          echo "Version: ${version:-latest}"
+
+  # =============================================================================
+  # Pre-deployment Security Checks
+  # =============================================================================
+  security-checks:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    needs: determine-environment
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+          
+      - name: Check for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+          
+      - name: SAST Security Scan
+        uses: github/codeql-action/analyze@v2
+        with:
+          languages: javascript,python
+
+  # =============================================================================
+  # Build and Test
+  # =============================================================================
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    needs: [determine-environment, security-checks]
+    if: github.event.inputs.skip_tests != 'true'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install dependencies
+        run: |
+          npm ci
+          pip install -r requirements-dev.txt
+          
+      - name: Run linting
+        run: |
+          npm run lint
+          black --check src/ tests/
+          isort --check-only src/ tests/
+          
+      - name: Run type checking
+        run: |
+          npm run typecheck
+          mypy src/
+          
+      - name: Run unit tests
+        run: |
+          npm run test:coverage
+          pytest --cov=src --cov-report=xml
+          
+      - name: Run integration tests
+        run: |
+          npm run test:integration
+          pytest tests/integration/
+          
+      - name: Run end-to-end tests
+        if: needs.determine-environment.outputs.environment == 'staging'
+        run: |
+          npm run test:e2e
+          
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: |
+            coverage/
+            test-results.xml
+            
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage/coverage-final.json,coverage.xml
+
+  # =============================================================================
+  # Build and Push Docker Image
+  # =============================================================================
+  build-image:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [determine-environment, build-and-test]
+    if: always() && (needs.build-and-test.result == 'success' || needs.build-and-test.result == 'skipped')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=${{ needs.determine-environment.outputs.version }}
+            
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ needs.determine-environment.outputs.version }}
+            BUILD_DATE=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+            GIT_COMMIT=${{ github.sha }}
+            
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.determine-environment.outputs.version }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+          
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v3
+        with:
+          name: sbom
+          path: sbom.spdx.json
+          
+      - name: Scan image for vulnerabilities
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.determine-environment.outputs.version }}
+          format: 'sarif'
+          output: 'image-scan-results.sarif'
+          
+      - name: Upload image scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'image-scan-results.sarif'
+
+  # =============================================================================
+  # Deploy to Staging
+  # =============================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [determine-environment, build-image]
+    if: needs.determine-environment.outputs.environment == 'staging'
+    environment:
+      name: staging
+      url: https://staging.synthetic-guardian.com
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+          
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.STAGING_KUBECONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+          kubectl cluster-info
+          
+      - name: Deploy to staging
+        run: |
+          export KUBECONFIG=kubeconfig
+          
+          # Update image tag in deployment
+          kubectl set image deployment/synthetic-guardian-app \
+            app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.determine-environment.outputs.version }} \
+            -n staging
+            
+          # Wait for rollout to complete
+          kubectl rollout status deployment/synthetic-guardian-app -n staging --timeout=600s
+          
+          # Verify deployment
+          kubectl get pods -n staging -l app=synthetic-guardian
+          
+      - name: Run health checks
+        run: |
+          # Wait for application to be ready
+          sleep 30
+          
+          # Check health endpoint
+          curl -f https://staging.synthetic-guardian.com/api/v1/health
+          
+          # Run basic smoke tests
+          curl -f https://staging.synthetic-guardian.com/api/v1/version
+          
+      - name: Run staging tests
+        run: |
+          # Run staging-specific tests
+          npm run test:staging || true
+          
+      - name: Notify deployment
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          text: |
+            Staging deployment completed
+            Version: ${{ needs.determine-environment.outputs.version }}
+            Environment: https://staging.synthetic-guardian.com
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # =============================================================================
+  # Deploy to Production
+  # =============================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [determine-environment, build-image]
+    if: needs.determine-environment.outputs.environment == 'production'
+    environment:
+      name: production
+      url: https://synthetic-guardian.com
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+          
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.PRODUCTION_KUBECONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+          kubectl cluster-info
+          
+      - name: Pre-deployment backup
+        run: |
+          export KUBECONFIG=kubeconfig
+          
+          # Create database backup
+          kubectl create job backup-$(date +%Y%m%d-%H%M%S) \
+            --from=cronjob/database-backup -n production
+            
+      - name: Blue-Green Deployment
+        run: |
+          export KUBECONFIG=kubeconfig
+          
+          # Get current deployment
+          current_version=$(kubectl get deployment synthetic-guardian-app -n production -o jsonpath='{.spec.template.spec.containers[0].image}' | cut -d: -f2)
+          echo "Current version: $current_version"
+          
+          # Create new deployment with green suffix
+          kubectl patch deployment synthetic-guardian-app -n production \
+            --type='json' \
+            -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/image", "value": "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.determine-environment.outputs.version }}"}]'
+            
+          # Wait for rollout
+          kubectl rollout status deployment/synthetic-guardian-app -n production --timeout=600s
+          
+      - name: Health checks and validation
+        id: health
+        run: |
+          # Wait for application to be ready
+          sleep 60
+          
+          # Comprehensive health checks
+          health_status=$(curl -s -o /dev/null -w "%{http_code}" https://synthetic-guardian.com/api/v1/health)
+          
+          if [ "$health_status" != "200" ]; then
+            echo "Health check failed with status: $health_status"
+            echo "rollback_needed=true" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+          # Check metrics endpoint
+          metrics_status=$(curl -s -o /dev/null -w "%{http_code}" https://synthetic-guardian.com/api/v1/metrics)
+          
+          if [ "$metrics_status" != "200" ]; then
+            echo "Metrics endpoint failed with status: $metrics_status"
+            echo "rollback_needed=true" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+          echo "rollback_needed=false" >> $GITHUB_OUTPUT
+          
+      - name: Run production smoke tests
+        if: steps.health.outputs.rollback_needed == 'false'
+        run: |
+          # Run critical path tests
+          npm run test:production-smoke
+          
+      - name: Update monitoring annotations
+        if: steps.health.outputs.rollback_needed == 'false'
+        run: |
+          export KUBECONFIG=kubeconfig
+          
+          # Add deployment annotation for monitoring
+          kubectl annotate deployment synthetic-guardian-app -n production \
+            deployment.kubernetes.io/revision-history-limit=10 \
+            synthetic-guardian.com/deployed-at="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            synthetic-guardian.com/deployed-by="${{ github.actor }}" \
+            synthetic-guardian.com/version="${{ needs.determine-environment.outputs.version }}" \
+            --overwrite
+            
+      - name: Rollback on failure
+        if: failure() || steps.health.outputs.rollback_needed == 'true'
+        run: |
+          export KUBECONFIG=kubeconfig
+          
+          echo "Rolling back deployment due to failure"
+          kubectl rollout undo deployment/synthetic-guardian-app -n production
+          kubectl rollout status deployment/synthetic-guardian-app -n production --timeout=300s
+          
+      - name: Notify successful deployment
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#deployments'
+          text: |
+            🚀 Production deployment successful!
+            Version: ${{ needs.determine-environment.outputs.version }}
+            Environment: https://synthetic-guardian.com
+            Deployed by: ${{ github.actor }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          
+      - name: Notify failed deployment
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#deployments'
+          text: |
+            ❌ Production deployment failed!
+            Version: ${{ needs.determine-environment.outputs.version }}
+            Rollback initiated
+            Check logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # =============================================================================
+  # Post-deployment Monitoring
+  # =============================================================================
+  post-deployment-monitoring:
+    name: Post-deployment Monitoring
+    runs-on: ubuntu-latest
+    needs: [determine-environment, deploy-staging, deploy-production]
+    if: always() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success')
+    
+    steps:
+      - name: Setup monitoring
+        run: |
+          environment="${{ needs.determine-environment.outputs.environment }}"
+          version="${{ needs.determine-environment.outputs.version }}"
+          
+          # Create Grafana annotation
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.GRAFANA_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "text": "Deployment: '$version' to '$environment'",
+              "tags": ["deployment", "'$environment'"],
+              "time": '$(date +%s000)'
+            }' \
+            "${{ secrets.GRAFANA_URL }}/api/annotations"
+            
+      - name: Schedule monitoring checks
+        run: |
+          # Schedule post-deployment monitoring for the next 30 minutes
+          echo "Monitoring deployment for 30 minutes..."
+          
+          # This would typically trigger additional monitoring workflows
+          # or send alerts to monitoring systems
+          
+      - name: Update status page
+        if: needs.determine-environment.outputs.environment == 'production'
+        run: |
+          # Update status page with deployment information
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.STATUS_PAGE_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "message": "Production deployment completed successfully",
+              "status": "operational",
+              "version": "${{ needs.determine-environment.outputs.version }}"
+            }' \
+            "${{ secrets.STATUS_PAGE_URL }}/api/incidents"

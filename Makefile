@@ -32,6 +32,19 @@ install: ## Install dependencies
 	@echo "$(CYAN)Installing dependencies...$(RESET)"
 	npm install
 	pip install -r requirements-dev.txt
+	pip install -e ".[dev]"
+	npx husky install
+	pre-commit install
+
+install-python: ## Install Python dependencies only
+	@echo "$(CYAN)Installing Python dependencies...$(RESET)"
+	pip install -r requirements-dev.txt
+	pip install -e ".[dev]"
+	pre-commit install
+
+install-node: ## Install Node.js dependencies only
+	@echo "$(CYAN)Installing Node.js dependencies...$(RESET)"
+	npm install
 	npx husky install
 
 dev: ## Start development environment
@@ -64,6 +77,15 @@ build-docker-dev: ## Build development Docker image
 test: ## Run all tests
 	@echo "$(CYAN)Running tests...$(RESET)"
 	npm run test
+	pytest
+
+test-python: ## Run Python tests only
+	@echo "$(CYAN)Running Python tests...$(RESET)"
+	pytest
+
+test-node: ## Run Node.js tests only
+	@echo "$(CYAN)Running Node.js tests...$(RESET)"
+	npm run test
 
 test-unit: ## Run unit tests only
 	@echo "$(CYAN)Running unit tests...$(RESET)"
@@ -89,22 +111,51 @@ test-coverage: ## Generate test coverage report
 lint: ## Run linting
 	@echo "$(CYAN)Running linter...$(RESET)"
 	npm run lint
+	ruff check src/ tests/
+	flake8 src/ tests/
 
 lint-fix: ## Fix linting issues
 	@echo "$(CYAN)Fixing linting issues...$(RESET)"
 	npm run lint:fix
+	ruff check --fix src/ tests/
+	black src/ tests/
+	isort src/ tests/
+
+lint-python: ## Run Python linting only
+	@echo "$(CYAN)Running Python linting...$(RESET)"
+	ruff check src/ tests/
+	flake8 src/ tests/
+	mypy src/
+
+lint-node: ## Run Node.js linting only
+	@echo "$(CYAN)Running Node.js linting...$(RESET)"
+	npm run lint
 
 format: ## Format code
 	@echo "$(CYAN)Formatting code...$(RESET)"
+	npm run format
+	black src/ tests/
+	isort src/ tests/
+
+format-python: ## Format Python code only
+	@echo "$(CYAN)Formatting Python code...$(RESET)"
+	black src/ tests/
+	isort src/ tests/
+
+format-node: ## Format Node.js code only
+	@echo "$(CYAN)Formatting Node.js code...$(RESET)"
 	npm run format
 
 format-check: ## Check code formatting
 	@echo "$(CYAN)Checking code formatting...$(RESET)"
 	npm run format:check
+	black --check src/ tests/
+	isort --check-only src/ tests/
 
-typecheck: ## Run TypeScript type checking
+typecheck: ## Run type checking
 	@echo "$(CYAN)Running type checking...$(RESET)"
 	npm run typecheck
+	mypy src/
 
 # Security targets
 security-audit: ## Run security audit
