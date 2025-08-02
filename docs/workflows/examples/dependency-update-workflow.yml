@@ -1,0 +1,367 @@
+# =============================================================================
+# Automated Dependency Update Workflow Template
+# =============================================================================
+# This workflow automatically updates dependencies and creates pull requests
+# for review. It runs weekly and includes security scanning.
+
+name: Automated Dependency Updates
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      update_type:
+        description: 'Type of update to perform'
+        required: true
+        default: 'minor'
+        type: choice
+        options:
+          - 'patch'
+          - 'minor'
+          - 'major'
+          - 'all'
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # =============================================================================
+  # Node.js Dependencies Update
+  # =============================================================================
+  update-node-dependencies:
+    name: Update Node.js Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.DEPENDENCY_UPDATE_TOKEN }}
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install current dependencies
+        run: npm ci
+        
+      - name: Run security audit
+        run: |
+          npm audit --audit-level=high
+          npx audit-ci --config audit-ci.json
+          
+      - name: Update dependencies
+        id: update
+        run: |
+          case "${{ github.event.inputs.update_type || 'minor' }}" in
+            patch)
+              npx npm-check-updates -u --target patch
+              ;;
+            minor)
+              npx npm-check-updates -u --target minor
+              ;;
+            major)
+              npx npm-check-updates -u --target major
+              ;;
+            all)
+              npx npm-check-updates -u
+              ;;
+          esac
+          
+          # Check if package.json was modified
+          if git diff --quiet package.json; then
+            echo "no_updates=true" >> $GITHUB_OUTPUT
+          else
+            echo "no_updates=false" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Install updated dependencies
+        if: steps.update.outputs.no_updates == 'false'
+        run: npm install
+        
+      - name: Run tests
+        if: steps.update.outputs.no_updates == 'false'
+        run: |
+          npm run test
+          npm run lint
+          npm run typecheck
+          
+      - name: Run security scan on updated dependencies
+        if: steps.update.outputs.no_updates == 'false'
+        run: |
+          npm audit --audit-level=moderate
+          npx audit-ci --config audit-ci.json
+          
+      - name: Create Pull Request
+        if: steps.update.outputs.no_updates == 'false'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.DEPENDENCY_UPDATE_TOKEN }}
+          commit-message: |
+            chore: update Node.js dependencies (${{ github.event.inputs.update_type || 'minor' }})
+            
+            - Updated dependencies to latest ${{ github.event.inputs.update_type || 'minor' }} versions
+            - All tests passing
+            - Security audit clean
+            
+            🤖 Automated dependency update
+          title: 'chore: update Node.js dependencies (${{ github.event.inputs.update_type || 'minor' }})'
+          body: |
+            ## Automated Dependency Update
+            
+            This PR updates Node.js dependencies to their latest ${{ github.event.inputs.update_type || 'minor' }} versions.
+            
+            ### Changes Made
+            - Updated package.json with latest compatible versions
+            - Verified all tests pass
+            - Confirmed security audit is clean
+            
+            ### Verification Steps
+            - [ ] Review updated dependencies
+            - [ ] Verify test suite passes
+            - [ ] Check for any breaking changes in changelogs
+            - [ ] Confirm application builds successfully
+            
+            ### Security
+            - ✅ Security audit passed
+            - ✅ No known vulnerabilities introduced
+            
+            ---
+            
+            🤖 This PR was created automatically by the dependency update workflow.
+          branch: automated/update-node-dependencies
+          delete-branch: true
+          labels: |
+            dependencies
+            automated
+            chore
+
+  # =============================================================================
+  # Python Dependencies Update
+  # =============================================================================
+  update-python-dependencies:
+    name: Update Python Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.DEPENDENCY_UPDATE_TOKEN }}
+          
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          
+      - name: Install current dependencies
+        run: |
+          poetry install
+          
+      - name: Run security scan
+        run: |
+          poetry run safety check
+          poetry run bandit -r src/
+          
+      - name: Update dependencies
+        id: update
+        run: |
+          case "${{ github.event.inputs.update_type || 'minor' }}" in
+            patch)
+              poetry update --lock
+              ;;
+            minor)
+              poetry add $(poetry show --outdated --only=main | grep -E "^\S+" -o | tr '\n' ' ') || true
+              ;;
+            major)
+              poetry add $(poetry show --outdated | grep -E "^\S+" -o | tr '\n' ' ') || true
+              ;;
+            all)
+              poetry add $(poetry show --outdated | grep -E "^\S+" -o | tr '\n' ' ') || true
+              ;;
+          esac
+          
+          # Check if pyproject.toml was modified
+          if git diff --quiet pyproject.toml poetry.lock; then
+            echo "no_updates=true" >> $GITHUB_OUTPUT
+          else
+            echo "no_updates=false" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Run tests
+        if: steps.update.outputs.no_updates == 'false'
+        run: |
+          poetry run pytest
+          poetry run black --check src/ tests/
+          poetry run isort --check-only src/ tests/
+          poetry run mypy src/
+          
+      - name: Run security scan on updated dependencies
+        if: steps.update.outputs.no_updates == 'false'
+        run: |
+          poetry run safety check
+          poetry run bandit -r src/
+          
+      - name: Create Pull Request
+        if: steps.update.outputs.no_updates == 'false'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.DEPENDENCY_UPDATE_TOKEN }}
+          commit-message: |
+            chore: update Python dependencies (${{ github.event.inputs.update_type || 'minor' }})
+            
+            - Updated dependencies to latest ${{ github.event.inputs.update_type || 'minor' }} versions
+            - All tests passing
+            - Security scan clean
+            
+            🤖 Automated dependency update
+          title: 'chore: update Python dependencies (${{ github.event.inputs.update_type || 'minor' }})'
+          body: |
+            ## Automated Python Dependency Update
+            
+            This PR updates Python dependencies to their latest ${{ github.event.inputs.update_type || 'minor' }} versions.
+            
+            ### Changes Made
+            - Updated pyproject.toml and poetry.lock
+            - Verified all tests pass
+            - Confirmed security scans are clean
+            
+            ### Verification Steps
+            - [ ] Review updated dependencies
+            - [ ] Verify test suite passes
+            - [ ] Check for any breaking changes in changelogs
+            - [ ] Confirm application builds successfully
+            
+            ### Security
+            - ✅ Safety check passed
+            - ✅ Bandit scan clean
+            
+            ---
+            
+            🤖 This PR was created automatically by the dependency update workflow.
+          branch: automated/update-python-dependencies
+          delete-branch: true
+          labels: |
+            dependencies
+            automated
+            chore
+            python
+
+  # =============================================================================
+  # Docker Base Image Update
+  # =============================================================================
+  update-docker-images:
+    name: Update Docker Base Images
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.DEPENDENCY_UPDATE_TOKEN }}
+          
+      - name: Check for base image updates
+        id: check
+        run: |
+          # Extract current base images
+          current_node=$(grep "FROM node:" Dockerfile | head -1 | cut -d' ' -f2)
+          current_python=$(grep "FROM python:" Dockerfile | head -1 | cut -d' ' -f2 || echo "")
+          
+          echo "current_node=$current_node" >> $GITHUB_OUTPUT
+          echo "current_python=$current_python" >> $GITHUB_OUTPUT
+          
+          # Check for updates (simplified - in real scenario, use proper registry API)
+          echo "Checking for updates to base images..."
+          echo "Current Node.js image: $current_node"
+          [ -n "$current_python" ] && echo "Current Python image: $current_python"
+          
+      - name: Update Dockerfile
+        id: update
+        run: |
+          # This is a simplified example - implement proper image update logic
+          updated=false
+          
+          # Update Node.js image to latest LTS patch version
+          if grep -q "FROM node:.*-alpine" Dockerfile; then
+            sed -i 's/FROM node:[0-9]*\.[0-9]*\.[0-9]*-alpine/FROM node:18-alpine/g' Dockerfile
+            updated=true
+          fi
+          
+          if [ "$updated" = true ]; then
+            echo "dockerfile_updated=true" >> $GITHUB_OUTPUT
+          else
+            echo "dockerfile_updated=false" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Build and test updated image
+        if: steps.update.outputs.dockerfile_updated == 'true'
+        run: |
+          # Build the updated image
+          docker build -t synthetic-data-guardian:test .
+          
+          # Run basic tests
+          docker run --rm synthetic-data-guardian:test npm test
+          
+      - name: Scan updated image for vulnerabilities
+        if: steps.update.outputs.dockerfile_updated == 'true'
+        run: |
+          # Install trivy
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+          
+          # Scan the image
+          trivy image --exit-code 1 --severity HIGH,CRITICAL synthetic-data-guardian:test
+          
+      - name: Create Pull Request
+        if: steps.update.outputs.dockerfile_updated == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.DEPENDENCY_UPDATE_TOKEN }}
+          commit-message: |
+            chore: update Docker base images
+            
+            - Updated base images to latest secure versions
+            - Vulnerability scan passed
+            - Build and tests successful
+            
+            🤖 Automated image update
+          title: 'chore: update Docker base images'
+          body: |
+            ## Automated Docker Base Image Update
+            
+            This PR updates Docker base images to their latest secure versions.
+            
+            ### Changes Made
+            - Updated Dockerfile with latest base images
+            - Verified build succeeds
+            - Confirmed vulnerability scan passes
+            
+            ### Security
+            - ✅ Trivy vulnerability scan passed
+            - ✅ No HIGH or CRITICAL vulnerabilities
+            
+            ### Verification Steps
+            - [ ] Review Dockerfile changes
+            - [ ] Verify application builds successfully
+            - [ ] Test application functionality
+            - [ ] Confirm no regressions introduced
+            
+            ---
+            
+            🤖 This PR was created automatically by the base image update workflow.
+          branch: automated/update-docker-images
+          delete-branch: true
+          labels: |
+            dependencies
+            automated
+            docker
+            security
