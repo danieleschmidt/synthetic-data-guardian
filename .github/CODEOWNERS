@@ -1,0 +1,50 @@
+# Global Owners
+* @repository-admins @security-team
+
+# Documentation
+*.md @docs-team @repository-admins
+docs/ @docs-team @repository-admins
+.github/ @repository-admins
+
+# Security & Compliance
+SECURITY.md @security-team
+.github/ISSUE_TEMPLATE/security_vulnerability.md @security-team
+docs/security/ @security-team
+docs/compliance/ @security-team @compliance-team
+
+# Core Generation Engine
+src/generators/ @ml-engineers @senior-developers
+src/validation/ @data-scientists @ml-engineers
+
+# Watermarking & Privacy
+src/watermark/ @security-team @cryptography-experts
+src/privacy/ @privacy-engineers @security-team
+
+# API & CLI
+src/api/ @backend-engineers @senior-developers
+src/cli/ @frontend-engineers @backend-engineers
+
+# Infrastructure & CI/CD
+docker-compose*.yml @devops-team
+Dockerfile* @devops-team
+.github/workflows/ @devops-team @repository-admins
+docs/workflows/ @devops-team @repository-admins
+
+# Testing
+tests/ @qa-engineers @senior-developers
+jest.config.js @qa-engineers @frontend-engineers
+pytest.ini @qa-engineers @data-scientists
+
+# Dependencies & Configuration
+package.json @senior-developers @repository-admins
+requirements*.txt @data-scientists @repository-admins
+pyproject.toml @data-scientists @repository-admins
+Makefile @devops-team @senior-developers
+
+# Monitoring & Observability
+monitoring/ @devops-team @sre-team
+docs/monitoring/ @devops-team @sre-team
+
+# Architecture & ADRs
+ARCHITECTURE.md @architects @senior-developers
+docs/adr/ @architects @senior-developers

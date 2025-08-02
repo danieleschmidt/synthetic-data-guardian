@@ -16,7 +16,11 @@ A clear and concise description of what you want to happen.
 A clear and concise description of any alternative solutions or features you've considered.
 
 ## Use Case
-Explain the specific use case or scenario where this feature would be beneficial.
+Explain the specific use case or scenario where this feature would be beneficial:
+- Data type: [e.g. tabular, image, text, time-series, graph]
+- Industry/domain: [e.g. healthcare, finance, retail, research]
+- Compliance requirements: [e.g. GDPR, HIPAA, SOC2, custom framework]
+- Scale: [e.g. dataset size, expected throughput]
 
 ## Additional context
 Add any other context, screenshots, or examples about the feature request here.
