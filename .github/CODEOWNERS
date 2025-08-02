@@ -1,0 +1,73 @@
+# CODEOWNERS for Synthetic Data Guardian
+# This file defines individuals or teams that are responsible for code in this repository.
+# Order matters - the last matching pattern has the highest precedence.
+
+# Global fallback - require review from core team
+* @danieleschmidt
+
+# Documentation
+*.md @danieleschmidt
+/docs/ @danieleschmidt
+
+# Configuration files
+*.yml @danieleschmidt
+*.yaml @danieleschmidt
+*.json @danieleschmidt
+*.toml @danieleschmidt
+.env* @danieleschmidt
+Dockerfile* @danieleschmidt
+docker-compose* @danieleschmidt
+
+# CI/CD and automation
+/.github/ @danieleschmidt
+/scripts/ @danieleschmidt
+Makefile @danieleschmidt
+
+# Security-related files
+/SECURITY.md @danieleschmidt
+/.github/workflows/*security* @danieleschmidt
+/.github/workflows/*dependabot* @danieleschmidt
+
+# Python code
+*.py @danieleschmidt
+/src/ @danieleschmidt
+/tests/ @danieleschmidt
+requirements*.txt @danieleschmidt
+pyproject.toml @danieleschmidt
+setup.py @danieleschmidt
+
+# TypeScript/JavaScript code
+*.ts @danieleschmidt
+*.js @danieleschmidt
+package*.json @danieleschmidt
+tsconfig*.json @danieleschmidt
+jest*.config.* @danieleschmidt
+playwright.config.* @danieleschmidt
+
+# Testing and quality assurance
+/tests/ @danieleschmidt
+*.test.* @danieleschmidt
+*.spec.* @danieleschmidt
+jest*.config.* @danieleschmidt
+pytest.ini @danieleschmidt
+
+# Compliance and legal
+/LICENSE @danieleschmidt
+/CODE_OF_CONDUCT.md @danieleschmidt
+/CONTRIBUTING.md @danieleschmidt
+
+# Architecture and design documents
+/docs/adr/ @danieleschmidt
+/ARCHITECTURE.md @danieleschmidt
+/PROJECT_CHARTER.md @danieleschmidt
+
+# Monitoring and observability
+/monitoring/ @danieleschmidt
+/docs/monitoring/ @danieleschmidt
+
+# Build and deployment
+/Dockerfile* @danieleschmidt
+/docker-compose* @danieleschmidt
+/.devcontainer/ @danieleschmidt
+/scripts/build.sh @danieleschmidt
+/scripts/release.sh @danieleschmidt

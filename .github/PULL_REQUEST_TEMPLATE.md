@@ -9,14 +9,16 @@ Closes #
 
 ## Type of Change
 <!-- Mark the relevant option with an "x" -->
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to change)
-- [ ] Documentation update
-- [ ] Performance improvement
-- [ ] Code refactoring
-- [ ] Test improvements
-- [ ] CI/CD improvements
+- [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
+- [ ] ✨ New feature (non-breaking change which adds functionality)
+- [ ] 💥 Breaking change (fix or feature that would cause existing functionality to change)
+- [ ] 📚 Documentation update
+- [ ] ⚡ Performance improvement
+- [ ] 🔧 Code refactoring
+- [ ] 🧪 Test improvements
+- [ ] 🤖 CI/CD improvements
+- [ ] 🔒 Security enhancement
+- [ ] 🏗️ Infrastructure changes
 
 ## Component(s) Affected
 <!-- Mark all that apply -->
