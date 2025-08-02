@@ -1,0 +1,303 @@
+# =============================================================================
+# Synthetic Data Guardian - Prometheus Recording Rules
+# =============================================================================
+
+groups:
+  # =============================================================================
+  # HTTP Request Metrics
+  # =============================================================================
+  - name: http_request_metrics
+    interval: 30s
+    rules:
+      # Request rate by service
+      - record: synthetic_guardian:http_request_rate
+        expr: rate(http_requests_total[5m])
+        labels:
+          aggregation: "5m"
+
+      - record: synthetic_guardian:http_request_rate
+        expr: rate(http_requests_total[1h])
+        labels:
+          aggregation: "1h"
+
+      # Error rate by service
+      - record: synthetic_guardian:http_error_rate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])
+        labels:
+          aggregation: "5m"
+
+      - record: synthetic_guardian:http_error_rate
+        expr: rate(http_requests_total{status=~"5.."}[1h]) / rate(http_requests_total[1h])
+        labels:
+          aggregation: "1h"
+
+      # Response time percentiles
+      - record: synthetic_guardian:http_request_duration_p50
+        expr: histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))
+
+      - record: synthetic_guardian:http_request_duration_p95
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+
+      - record: synthetic_guardian:http_request_duration_p99
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))
+
+      # Request rate by endpoint
+      - record: synthetic_guardian:endpoint_request_rate
+        expr: rate(http_requests_total[5m])
+
+      # SLI: Request success rate
+      - record: synthetic_guardian:sli_request_success_rate
+        expr: 1 - (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]))
+
+  # =============================================================================
+  # Application Performance Metrics
+  # =============================================================================
+  - name: application_performance
+    interval: 60s
+    rules:
+      # Generation metrics
+      - record: synthetic_guardian:generation_rate
+        expr: rate(synthetic_guardian_generation_requests_total[5m])
+
+      - record: synthetic_guardian:generation_success_rate
+        expr: rate(synthetic_guardian_generation_success_total[5m]) / rate(synthetic_guardian_generation_requests_total[5m])
+
+      - record: synthetic_guardian:generation_duration_p50
+        expr: histogram_quantile(0.50, rate(synthetic_guardian_generation_duration_seconds_bucket[5m]))
+
+      - record: synthetic_guardian:generation_duration_p95
+        expr: histogram_quantile(0.95, rate(synthetic_guardian_generation_duration_seconds_bucket[5m]))
+
+      - record: synthetic_guardian:generation_duration_p99
+        expr: histogram_quantile(0.99, rate(synthetic_guardian_generation_duration_seconds_bucket[5m]))
+
+      # Validation metrics
+      - record: synthetic_guardian:validation_rate
+        expr: rate(synthetic_guardian_validation_requests_total[5m])
+
+      - record: synthetic_guardian:validation_success_rate
+        expr: rate(synthetic_guardian_validation_success_total[5m]) / rate(synthetic_guardian_validation_requests_total[5m])
+
+      # Watermarking metrics
+      - record: synthetic_guardian:watermarking_rate
+        expr: rate(synthetic_guardian_watermarking_requests_total[5m])
+
+      - record: synthetic_guardian:watermarking_success_rate
+        expr: rate(synthetic_guardian_watermarking_success_total[5m]) / rate(synthetic_guardian_watermarking_requests_total[5m])
+
+      # Quality scores (average over time)
+      - record: synthetic_guardian:avg_quality_score_5m
+        expr: avg_over_time(synthetic_guardian_quality_score[5m])
+
+      - record: synthetic_guardian:avg_quality_score_1h
+        expr: avg_over_time(synthetic_guardian_quality_score[1h])
+
+      - record: synthetic_guardian:avg_privacy_score_5m
+        expr: avg_over_time(synthetic_guardian_privacy_score[5m])
+
+      - record: synthetic_guardian:avg_privacy_score_1h
+        expr: avg_over_time(synthetic_guardian_privacy_score[1h])
+
+  # =============================================================================
+  # Infrastructure Resource Utilization
+  # =============================================================================
+  - name: infrastructure_utilization
+    interval: 60s
+    rules:
+      # CPU utilization
+      - record: synthetic_guardian:cpu_utilization
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+
+      # Memory utilization
+      - record: synthetic_guardian:memory_utilization
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
+
+      # Disk utilization
+      - record: synthetic_guardian:disk_utilization
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs"} / node_filesystem_size_bytes)) * 100
+
+      # Network I/O rates
+      - record: synthetic_guardian:network_receive_rate
+        expr: rate(node_network_receive_bytes_total[5m])
+
+      - record: synthetic_guardian:network_transmit_rate
+        expr: rate(node_network_transmit_bytes_total[5m])
+
+      # Container metrics (if using Docker/Kubernetes)
+      - record: synthetic_guardian:container_cpu_utilization
+        expr: rate(container_cpu_usage_seconds_total{container!="POD",container!=""}[5m]) * 100
+
+      - record: synthetic_guardian:container_memory_utilization
+        expr: container_memory_usage_bytes{container!="POD",container!=""} / container_spec_memory_limit_bytes * 100
+
+  # =============================================================================
+  # Database Performance Metrics
+  # =============================================================================
+  - name: database_performance
+    interval: 60s
+    rules:
+      # PostgreSQL metrics
+      - record: synthetic_guardian:postgres_connection_utilization
+        expr: pg_stat_database_numbackends / pg_settings_max_connections * 100
+
+      - record: synthetic_guardian:postgres_transaction_rate
+        expr: rate(pg_stat_database_xact_commit[5m]) + rate(pg_stat_database_xact_rollback[5m])
+
+      - record: synthetic_guardian:postgres_deadlock_rate
+        expr: rate(pg_stat_database_deadlocks[5m])
+
+      - record: synthetic_guardian:postgres_buffer_hit_ratio
+        expr: pg_stat_database_blks_hit / (pg_stat_database_blks_hit + pg_stat_database_blks_read) * 100
+
+      # Redis metrics
+      - record: synthetic_guardian:redis_memory_utilization
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100
+
+      - record: synthetic_guardian:redis_hit_ratio
+        expr: redis_keyspace_hits / (redis_keyspace_hits + redis_keyspace_misses) * 100
+
+      - record: synthetic_guardian:redis_connection_utilization
+        expr: redis_connected_clients / redis_config_maxclients * 100
+
+      # Neo4j metrics
+      - record: synthetic_guardian:neo4j_transaction_rate
+        expr: rate(neo4j_database_transaction_committed_total[5m]) + rate(neo4j_database_transaction_rollbacks_total[5m])
+
+      - record: synthetic_guardian:neo4j_page_cache_hit_ratio
+        expr: neo4j_page_cache_hits / (neo4j_page_cache_hits + neo4j_page_cache_faults) * 100
+
+  # =============================================================================
+  # Business Metrics
+  # =============================================================================
+  - name: business_metrics
+    interval: 300s  # 5 minutes
+    rules:
+      # Daily active pipelines
+      - record: synthetic_guardian:daily_active_pipelines
+        expr: count by() (count by(pipeline_name) (increase(synthetic_guardian_generation_requests_total[24h])))
+
+      # Data volume generated (daily)
+      - record: synthetic_guardian:daily_data_volume_gb
+        expr: sum(increase(synthetic_guardian_data_generated_bytes_total[24h])) / (1024^3)
+
+      # User engagement metrics
+      - record: synthetic_guardian:daily_active_users
+        expr: count by() (count by(user_id) (increase(synthetic_guardian_user_requests_total[24h])))
+
+      - record: synthetic_guardian:weekly_active_users
+        expr: count by() (count by(user_id) (increase(synthetic_guardian_user_requests_total[7d])))
+
+      # Compliance metrics
+      - record: synthetic_guardian:gdpr_compliance_rate
+        expr: rate(synthetic_guardian_gdpr_compliant_generations_total[1h]) / rate(synthetic_guardian_generation_requests_total[1h])
+
+      - record: synthetic_guardian:hipaa_compliance_rate
+        expr: rate(synthetic_guardian_hipaa_compliant_generations_total[1h]) / rate(synthetic_guardian_generation_requests_total[1h])
+
+  # =============================================================================
+  # SLI/SLO Metrics
+  # =============================================================================
+  - name: sli_slo_metrics
+    interval: 60s
+    rules:
+      # Availability SLI (99.9% target)
+      - record: synthetic_guardian:sli_availability
+        expr: synthetic_guardian:sli_request_success_rate
+
+      # Latency SLI (95% of requests < 2s)
+      - record: synthetic_guardian:sli_latency
+        expr: 1 - (rate(http_request_duration_seconds_bucket{le="2.0"}[5m]) / rate(http_requests_total[5m]))
+
+      # Throughput SLI (handle 1000 req/s)
+      - record: synthetic_guardian:sli_throughput
+        expr: rate(http_requests_total[5m])
+
+      # Quality SLI (average quality score > 0.9)
+      - record: synthetic_guardian:sli_quality
+        expr: synthetic_guardian:avg_quality_score_5m
+
+      # Privacy SLI (average privacy score > 0.95)
+      - record: synthetic_guardian:sli_privacy
+        expr: synthetic_guardian:avg_privacy_score_5m
+
+      # Generation success SLI (95% success rate)
+      - record: synthetic_guardian:sli_generation_success
+        expr: synthetic_guardian:generation_success_rate
+
+  # =============================================================================
+  # Capacity Planning Metrics
+  # =============================================================================
+  - name: capacity_planning
+    interval: 300s
+    rules:
+      # Resource utilization trends (1 week)
+      - record: synthetic_guardian:cpu_utilization_trend_1w
+        expr: avg_over_time(synthetic_guardian:cpu_utilization[7d])
+
+      - record: synthetic_guardian:memory_utilization_trend_1w
+        expr: avg_over_time(synthetic_guardian:memory_utilization[7d])
+
+      - record: synthetic_guardian:disk_utilization_trend_1w
+        expr: avg_over_time(synthetic_guardian:disk_utilization[7d])
+
+      # Request volume trends
+      - record: synthetic_guardian:request_volume_trend_1w
+        expr: avg_over_time(synthetic_guardian:http_request_rate{aggregation="1h"}[7d])
+
+      # Generation volume trends
+      - record: synthetic_guardian:generation_volume_trend_1w
+        expr: avg_over_time(synthetic_guardian:generation_rate[7d])
+
+      # Database connection trends
+      - record: synthetic_guardian:db_connection_trend_1w
+        expr: avg_over_time(synthetic_guardian:postgres_connection_utilization[7d])
+
+  # =============================================================================
+  # Error Budget Tracking
+  # =============================================================================
+  - name: error_budget_tracking
+    interval: 300s
+    rules:
+      # Error budget consumption (30-day rolling window)
+      - record: synthetic_guardian:error_budget_availability_30d
+        expr: 1 - (1 - avg_over_time(synthetic_guardian:sli_availability[30d]))
+
+      - record: synthetic_guardian:error_budget_latency_30d
+        expr: 1 - (1 - avg_over_time(synthetic_guardian:sli_latency[30d]))
+
+      - record: synthetic_guardian:error_budget_quality_30d
+        expr: 1 - (1 - avg_over_time(synthetic_guardian:sli_quality[30d]))
+
+      # Error budget burn rate (how fast we're consuming error budget)
+      - record: synthetic_guardian:error_budget_burn_rate_1h
+        expr: (1 - synthetic_guardian:sli_availability) / (1 - 0.999) * 24 * 30  # 99.9% SLO
+
+      - record: synthetic_guardian:error_budget_burn_rate_6h
+        expr: (1 - avg_over_time(synthetic_guardian:sli_availability[6h])) / (1 - 0.999) * 24 * 30
+
+  # =============================================================================
+  # Security Metrics
+  # =============================================================================
+  - name: security_metrics
+    interval: 300s
+    rules:
+      # Authentication metrics
+      - record: synthetic_guardian:auth_success_rate
+        expr: rate(synthetic_guardian_auth_success_total[5m]) / rate(synthetic_guardian_auth_attempts_total[5m])
+
+      - record: synthetic_guardian:suspicious_activity_rate
+        expr: rate(synthetic_guardian_suspicious_requests_total[5m])
+
+      # API security metrics
+      - record: synthetic_guardian:api_abuse_rate
+        expr: rate(http_requests_total{status="429"}[5m])
+
+      - record: synthetic_guardian:unauthorized_access_rate
+        expr: rate(http_requests_total{status="403"}[5m])
+
+      # Data security metrics
+      - record: synthetic_guardian:data_access_rate
+        expr: rate(synthetic_guardian_data_access_total[5m])
+
+      - record: synthetic_guardian:pii_exposure_incidents
+        expr: rate(synthetic_guardian_pii_exposure_total[5m])

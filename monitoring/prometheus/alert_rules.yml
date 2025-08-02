@@ -1,0 +1,424 @@
+# =============================================================================
+# Synthetic Data Guardian - Prometheus Alert Rules
+# =============================================================================
+
+groups:
+  # =============================================================================
+  # Application Health Alerts
+  # =============================================================================
+  - name: application_health
+    interval: 30s
+    rules:
+      - alert: ApplicationDown
+        expr: up{job="synthetic-guardian-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: application
+          team: platform
+        annotations:
+          summary: "Synthetic Data Guardian application is down"
+          description: "The Synthetic Data Guardian application has been down for more than 1 minute."
+          runbook_url: "https://runbooks.synthetic-guardian.com/application-down"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: application
+          team: platform
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for the last 5 minutes."
+          runbook_url: "https://runbooks.synthetic-guardian.com/high-error-rate"
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          component: application
+          team: platform
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s for the last 5 minutes."
+          runbook_url: "https://runbooks.synthetic-guardian.com/high-response-time"
+
+      - alert: HealthCheckFailing
+        expr: synthetic_guardian_health_check == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: application
+          team: platform
+        annotations:
+          summary: "Application health check failing"
+          description: "Health check has been failing for more than 2 minutes."
+          runbook_url: "https://runbooks.synthetic-guardian.com/health-check-fail"
+
+  # =============================================================================
+  # Database Alerts
+  # =============================================================================
+  - name: database_health
+    interval: 30s
+    rules:
+      - alert: PostgreSQLDown
+        expr: up{job="postgres-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+          team: platform
+        annotations:
+          summary: "PostgreSQL database is down"
+          description: "PostgreSQL has been down for more than 1 minute."
+          runbook_url: "https://runbooks.synthetic-guardian.com/postgres-down"
+
+      - alert: HighDatabaseConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+          team: platform
+        annotations:
+          summary: "High database connection usage"
+          description: "Database connection usage is {{ $value | humanizePercentage }}."
+          runbook_url: "https://runbooks.synthetic-guardian.com/high-db-connections"
+
+      - alert: DatabaseDeadlocks
+        expr: rate(pg_stat_database_deadlocks[5m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          component: database
+          team: platform
+        annotations:
+          summary: "Database deadlocks detected"
+          description: "{{ $value }} deadlocks per second detected in the database."
+          runbook_url: "https://runbooks.synthetic-guardian.com/db-deadlocks"
+
+      - alert: RedisDown
+        expr: up{job="redis-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: cache
+          team: platform
+        annotations:
+          summary: "Redis cache is down"
+          description: "Redis has been down for more than 1 minute."
+          runbook_url: "https://runbooks.synthetic-guardian.com/redis-down"
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: cache
+          team: platform
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis memory usage is {{ $value | humanizePercentage }}."
+          runbook_url: "https://runbooks.synthetic-guardian.com/redis-memory"
+
+      - alert: Neo4jDown
+        expr: up{job="neo4j-metrics"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: graph_db
+          team: platform
+        annotations:
+          summary: "Neo4j graph database is down"
+          description: "Neo4j has been down for more than 1 minute."
+          runbook_url: "https://runbooks.synthetic-guardian.com/neo4j-down"
+
+  # =============================================================================
+  # Infrastructure Alerts
+  # =============================================================================
+  - name: infrastructure_health
+    interval: 30s
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+          team: platform
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}."
+          runbook_url: "https://runbooks.synthetic-guardian.com/high-cpu"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+          team: platform
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value }}% on {{ $labels.instance }}."
+          runbook_url: "https://runbooks.synthetic-guardian.com/high-memory"
+
+      - alert: DiskSpaceLow
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs"} / node_filesystem_size_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+          team: platform
+        annotations:
+          summary: "Low disk space detected"
+          description: "Disk usage is {{ $value }}% on {{ $labels.instance }} ({{ $labels.mountpoint }})."
+          runbook_url: "https://runbooks.synthetic-guardian.com/low-disk"
+
+      - alert: HighNetworkErrors
+        expr: rate(node_network_receive_errs_total[5m]) + rate(node_network_transmit_errs_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+          team: platform
+        annotations:
+          summary: "High network errors detected"
+          description: "Network error rate is {{ $value }} errors/second on {{ $labels.instance }}."
+          runbook_url: "https://runbooks.synthetic-guardian.com/network-errors"
+
+  # =============================================================================
+  # Business Logic Alerts
+  # =============================================================================
+  - name: synthetic_data_generation
+    interval: 60s
+    rules:
+      - alert: GenerationFailureRate
+        expr: rate(synthetic_guardian_generation_failures_total[10m]) / rate(synthetic_guardian_generation_requests_total[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: generation
+          team: data_platform
+        annotations:
+          summary: "High synthetic data generation failure rate"
+          description: "Generation failure rate is {{ $value | humanizePercentage }} over the last 10 minutes."
+          runbook_url: "https://runbooks.synthetic-guardian.com/generation-failures"
+
+      - alert: LongRunningGenerations
+        expr: synthetic_guardian_generation_duration_seconds > 3600
+        for: 0m
+        labels:
+          severity: warning
+          component: generation
+          team: data_platform
+        annotations:
+          summary: "Long running data generation detected"
+          description: "Data generation has been running for {{ $value }}s (> 1 hour)."
+          runbook_url: "https://runbooks.synthetic-guardian.com/long-generation"
+
+      - alert: QualityScoreDropped
+        expr: synthetic_guardian_quality_score < 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: validation
+          team: data_platform
+        annotations:
+          summary: "Synthetic data quality score dropped"
+          description: "Quality score is {{ $value }} (below 0.8 threshold)."
+          runbook_url: "https://runbooks.synthetic-guardian.com/quality-score"
+
+      - alert: PrivacyScoreDropped
+        expr: synthetic_guardian_privacy_score < 0.9
+        for: 5m
+        labels:
+          severity: critical
+          component: validation
+          team: data_platform
+        annotations:
+          summary: "Synthetic data privacy score dropped"
+          description: "Privacy score is {{ $value }} (below 0.9 threshold)."
+          runbook_url: "https://runbooks.synthetic-guardian.com/privacy-score"
+
+      - alert: WatermarkingFailures
+        expr: rate(synthetic_guardian_watermarking_failures_total[10m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          component: watermarking
+          team: data_platform
+        annotations:
+          summary: "Watermarking failures detected"
+          description: "{{ $value }} watermarking failures per second."
+          runbook_url: "https://runbooks.synthetic-guardian.com/watermarking-failures"
+
+  # =============================================================================
+  # Security Alerts
+  # =============================================================================
+  - name: security_alerts
+    interval: 60s
+    rules:
+      - alert: SuspiciousActivityDetected
+        expr: rate(synthetic_guardian_suspicious_requests_total[5m]) > 10
+        for: 1m
+        labels:
+          severity: critical
+          component: security
+          team: security
+        annotations:
+          summary: "Suspicious activity detected"
+          description: "{{ $value }} suspicious requests per second detected."
+          runbook_url: "https://runbooks.synthetic-guardian.com/suspicious-activity"
+
+      - alert: HighFailedAuthenticationRate
+        expr: rate(synthetic_guardian_auth_failures_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: security
+          team: security
+        annotations:
+          summary: "High authentication failure rate"
+          description: "{{ $value }} authentication failures per second."
+          runbook_url: "https://runbooks.synthetic-guardian.com/auth-failures"
+
+      - alert: UnauthorizedAccessAttempts
+        expr: rate(http_requests_total{status="403"}[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: security
+          team: security
+        annotations:
+          summary: "Unauthorized access attempts detected"
+          description: "{{ $value }} unauthorized access attempts per second."
+          runbook_url: "https://runbooks.synthetic-guardian.com/unauthorized-access"
+
+      - alert: TLSCertificateExpiry
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 7
+        for: 0m
+        labels:
+          severity: warning
+          component: security
+          team: platform
+        annotations:
+          summary: "TLS certificate expiring soon"
+          description: "TLS certificate expires in {{ $value | humanizeDuration }}."
+          runbook_url: "https://runbooks.synthetic-guardian.com/cert-expiry"
+
+  # =============================================================================
+  # External Dependencies
+  # =============================================================================
+  - name: external_dependencies
+    interval: 60s
+    rules:
+      - alert: ExternalServiceDown
+        expr: probe_success{job="blackbox-http"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          component: external
+          team: platform
+        annotations:
+          summary: "External service unreachable"
+          description: "External service {{ $labels.instance }} is unreachable."
+          runbook_url: "https://runbooks.synthetic-guardian.com/external-service-down"
+
+      - alert: SlowExternalService
+        expr: probe_duration_seconds{job="blackbox-http"} > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: external
+          team: platform
+        annotations:
+          summary: "External service responding slowly"
+          description: "External service {{ $labels.instance }} response time is {{ $value }}s."
+          runbook_url: "https://runbooks.synthetic-guardian.com/slow-external-service"
+
+  # =============================================================================
+  # Capacity Planning Alerts
+  # =============================================================================
+  - name: capacity_planning
+    interval: 300s
+    rules:
+      - alert: HighRequestVolume
+        expr: rate(http_requests_total[5m]) > 1000
+        for: 10m
+        labels:
+          severity: warning
+          component: capacity
+          team: platform
+        annotations:
+          summary: "High request volume detected"
+          description: "Request volume is {{ $value }} requests/second."
+          runbook_url: "https://runbooks.synthetic-guardian.com/high-volume"
+
+      - alert: DatabaseConnectionPoolExhaustion
+        expr: pg_stat_activity_count / pg_settings_max_connections > 0.9
+        for: 5m
+        labels:
+          severity: critical
+          component: database
+          team: platform
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "Connection pool usage is {{ $value | humanizePercentage }}."
+          runbook_url: "https://runbooks.synthetic-guardian.com/db-pool-exhaustion"
+
+      - alert: QueueBacklog
+        expr: synthetic_guardian_queue_size > 10000
+        for: 5m
+        labels:
+          severity: warning
+          component: queue
+          team: platform
+        annotations:
+          summary: "Large queue backlog detected"
+          description: "Queue size is {{ $value }} items."
+          runbook_url: "https://runbooks.synthetic-guardian.com/queue-backlog"
+
+  # =============================================================================
+  # Data Quality Monitoring
+  # =============================================================================
+  - name: data_quality_monitoring
+    interval: 300s
+    rules:
+      - alert: DataDriftDetected
+        expr: synthetic_guardian_data_drift_score > 0.3
+        for: 10m
+        labels:
+          severity: warning
+          component: data_quality
+          team: data_platform
+        annotations:
+          summary: "Data drift detected in synthetic data"
+          description: "Data drift score is {{ $value }} (threshold: 0.3)."
+          runbook_url: "https://runbooks.synthetic-guardian.com/data-drift"
+
+      - alert: BiasDetected
+        expr: synthetic_guardian_bias_score > 0.2
+        for: 5m
+        labels:
+          severity: warning
+          component: data_quality
+          team: data_platform
+        annotations:
+          summary: "Bias detected in synthetic data"
+          description: "Bias score is {{ $value }} (threshold: 0.2)."
+          runbook_url: "https://runbooks.synthetic-guardian.com/bias-detected"
+
+      - alert: LineageTrackingFailure
+        expr: rate(synthetic_guardian_lineage_failures_total[10m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          component: lineage
+          team: data_platform
+        annotations:
+          summary: "Lineage tracking failures detected"
+          description: "{{ $value }} lineage tracking failures per second."
+          runbook_url: "https://runbooks.synthetic-guardian.com/lineage-failures"
