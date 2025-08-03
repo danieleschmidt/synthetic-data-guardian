@@ -1,77 +1,46 @@
-# EditorConfig is awesome: https://EditorConfig.org
+# EditorConfig helps developers define and maintain consistent
+# coding styles between different editors and IDEs
+# editorconfig.org
 
-# top-most EditorConfig file
 root = true
 
-# All files
 [*]
-charset = utf-8
-end_of_line = lf
 indent_style = space
 indent_size = 2
-insert_final_newline = true
+end_of_line = lf
+charset = utf-8
 trim_trailing_whitespace = true
-max_line_length = 120
+insert_final_newline = true
 
-# Python files
-[*.py]
-indent_size = 4
-max_line_length = 88
+[*.{js,jsx,ts,tsx}]
+indent_size = 2
+max_line_length = 100
 
-# Markdown files
+[*.{json,yml,yaml}]
+indent_size = 2
+
 [*.md]
 trim_trailing_whitespace = false
 max_line_length = off
 
-# YAML files
-[*.{yml,yaml}]
+[*.{py}]
+indent_size = 4
+max_line_length = 88
+
+[*.{sql}]
 indent_size = 2
 
-# JSON files
-[*.json]
+[*.{sh,bash}]
 indent_size = 2
 
-# Makefile
 [Makefile]
 indent_style = tab
 
-# Shell scripts
-[*.sh]
-indent_size = 4
-
-# Docker files
-[Dockerfile*]
-indent_size = 4
-
-# Go files
-[*.go]
-indent_style = tab
-indent_size = 4
-
-# Rust files
-[*.rs]
-indent_size = 4
-
-# HTML files
-[*.html]
+[*.{html,xml}]
 indent_size = 2
 
-# CSS/SCSS files
 [*.{css,scss,sass}]
 indent_size = 2
 
-# JavaScript/TypeScript files
-[*.{js,jsx,ts,tsx}]
-indent_size = 2
-
-# Configuration files
-[*.{toml,ini,cfg}]
-indent_size = 4
-
-# SQL files
-[*.sql]
-indent_size = 2
-
-# XML files
-[*.xml]
+[{package.json,.travis.yml}]
 indent_size = 2
