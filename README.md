@@ -1,9 +1,9 @@
 # synthetic-data-guardian
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/your-org/synthetic-data-guardian/ci.yml?branch=main)](https://github.com/your-org/synthetic-data-guardian/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/danieleschmidt/synthetic-data-guardian/ci.yml?branch=main)](https://github.com/danieleschmidt/synthetic-data-guardian/actions)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![Docs](https://img.shields.io/badge/docs-latest-green.svg)](https://docs.your-org.com/synthetic-guardian)
+[![Docs](https://img.shields.io/badge/docs-latest-green.svg)](https://docs.danieleschmidt.com/synthetic-guardian)
 
 Enterprise-grade synthetic data pipeline with built-in validation, watermarking, and auditable lineage tracking. Ensure regulatory compliance while leveraging synthetic data for AI development.
 
@@ -56,7 +56,7 @@ pip install synthetic-data-guardian[graph]    # GraphVAE
 ```bash
 docker run -it -p 8080:8080 \
   -v $(pwd)/data:/data \
-  your-org/synthetic-guardian:latest
+  danieleschmidt/synthetic-guardian:latest
 ```
 
 ## ⚡ Quick Start
@@ -629,7 +629,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ```bash
 # Clone repository
-git clone https://github.com/your-org/synthetic-data-guardian
+git clone https://github.com/danieleschmidt/synthetic-data-guardian
 cd synthetic-data-guardian
 
 # Install with dev dependencies
@@ -648,13 +648,13 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## 🔗 Related Projects
 
-- [Lang-Observatory](https://github.com/your-org/lang-observatory) - Monitoring dashboard
-- [Privacy-Preserving-Finetuner](https://github.com/your-org/privacy-preserving-agent-finetuner) - Private model training
+- [Lang-Observatory](https://github.com/danieleschmidt/lang-observatory) - Monitoring dashboard
+- [Privacy-Preserving-Finetuner](https://github.com/danieleschmidt/privacy-preserving-agent-finetuner) - Private model training
 - [SDV](https://github.com/sdv-dev/SDV) - Synthetic Data Vault
 
 ## 📞 Support
 
-- 📧 Email: synthetic-data@your-org.com
-- 💬 Discord: [Join our community](https://discord.gg/your-org)
-- 📖 Documentation: [Full docs](https://docs.your-org.com/synthetic-guardian)
-- 🎓 Tutorial: [Synthetic Data Best Practices](https://learn.your-org.com/synthetic-data)
+- 📧 Email: synthetic-data@danieleschmidt.com
+- 💬 Discord: [Join our community](https://discord.gg/danieleschmidt)
+- 📖 Documentation: [Full docs](https://docs.danieleschmidt.com/synthetic-guardian)
+- 🎓 Tutorial: [Synthetic Data Best Practices](https://learn.danieleschmidt.com/synthetic-data)
