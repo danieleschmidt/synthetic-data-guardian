@@ -178,7 +178,7 @@ rq>=1.15.0,<3.0.0
 # Authentication & Authorization
 passlib>=1.7.4,<2.0.0
 bcrypt>=4.0.0,<5.0.0
-cryptography>=41.0.0,<42.0.0
+cryptography>=41.0.0,<46.0.0
 
 # HTTP Client
 aiohttp>=3.8.0,<4.0.0
