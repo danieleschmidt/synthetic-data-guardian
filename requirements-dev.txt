@@ -173,7 +173,7 @@ cachetools>=5.3.0,<6.0.0
 
 # Job Queue
 celery>=5.3.0,<6.0.0
-rq>=1.15.0,<2.0.0
+rq>=1.15.0,<3.0.0
 
 # Authentication & Authorization
 passlib>=1.7.4,<2.0.0
