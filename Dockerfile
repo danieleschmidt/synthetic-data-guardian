@@ -3,7 +3,7 @@
 # =============================================================================
 
 # Multi-stage build for optimal image size and security
-FROM node:18-alpine AS base
+FROM node:24-alpine AS base
 
 # Install security updates and required packages
 RUN apk update && apk upgrade && \
@@ -87,7 +87,7 @@ RUN npm run build && \
 # =============================================================================
 # Production stage
 # =============================================================================
-FROM node:18-alpine AS production
+FROM node:24-alpine AS production
 
 # Install security updates
 RUN apk update && apk upgrade && \
