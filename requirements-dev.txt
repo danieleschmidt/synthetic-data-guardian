@@ -85,7 +85,7 @@ responses>=0.23.0,<1.0.0
 locust>=2.17.0,<3.0.0
 
 # Database Testing
-pytest-postgresql>=5.0.0,<6.0.0
+pytest-postgresql>=5.0.0,<8.0.0
 pytest-redis>=3.0.0,<4.0.0
 pytest-mock-resources>=2.10.0,<3.0.0
 
