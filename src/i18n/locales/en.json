@@ -1,0 +1,105 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "create": "Create",
+    "update": "Update",
+    "close": "Close"
+  },
+  "app": {
+    "title": "Synthetic Data Guardian",
+    "description": "Enterprise-grade synthetic data pipeline with built-in validation, watermarking, and auditable lineage tracking",
+    "version": "Version {{version}}",
+    "environment": "Environment: {{env}}"
+  },
+  "generation": {
+    "title": "Data Generation",
+    "generate": "Generate Data",
+    "generating": "Generating...",
+    "generated": "Generated {{count}} records",
+    "failed": "Generation failed",
+    "numRecords": "Number of Records",
+    "seed": "Random Seed",
+    "pipeline": "Pipeline",
+    "quality": "Quality Score",
+    "privacy": "Privacy Score",
+    "executionTime": "Execution Time"
+  },
+  "validation": {
+    "title": "Data Validation",
+    "validate": "Validate Data",
+    "validating": "Validating...",
+    "passed": "Validation Passed",
+    "failed": "Validation Failed",
+    "score": "Overall Score",
+    "threshold": "Threshold",
+    "validators": "Validators",
+    "issues": "Issues Found",
+    "warnings": "Warnings",
+    "errors": "Errors"
+  },
+  "security": {
+    "title": "Security",
+    "authentication": "Authentication",
+    "authorization": "Authorization",
+    "apiKey": "API Key",
+    "token": "Token",
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Access forbidden",
+    "rateLimited": "Rate limit exceeded",
+    "suspicious": "Suspicious activity detected"
+  },
+  "compliance": {
+    "title": "Compliance",
+    "gdpr": "GDPR",
+    "hipaa": "HIPAA",
+    "ccpa": "CCPA",
+    "report": "Compliance Report",
+    "status": "Compliance Status",
+    "compliant": "Compliant",
+    "nonCompliant": "Non-Compliant",
+    "requirements": "Requirements"
+  },
+  "monitoring": {
+    "title": "Monitoring",
+    "health": "Health Status",
+    "metrics": "Metrics",
+    "logs": "Logs",
+    "alerts": "Alerts",
+    "performance": "Performance",
+    "uptime": "Uptime",
+    "memory": "Memory Usage",
+    "cpu": "CPU Usage",
+    "disk": "Disk Usage"
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "notFound": "Resource not found",
+    "serverError": "Internal server error",
+    "networkError": "Network error",
+    "timeout": "Request timeout",
+    "invalidInput": "Invalid input",
+    "configError": "Configuration error",
+    "databaseError": "Database error",
+    "cacheError": "Cache error"
+  },
+  "api": {
+    "endpoints": {
+      "generate": "Generate synthetic data",
+      "validate": "Validate data quality",
+      "lineage": "Track data lineage",
+      "watermark": "Apply watermarking",
+      "health": "Health check",
+      "metrics": "System metrics"
+    }
+  }
+}
