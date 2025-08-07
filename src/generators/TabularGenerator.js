@@ -19,7 +19,7 @@ export class TabularGenerator {
       this.logger.info('Initializing tabular generator', { backend: this.backend });
 
       this.schema = config.schema || {};
-      
+
       // Initialize specific backend
       switch (this.backend.toLowerCase()) {
         case 'sdv':
@@ -39,11 +39,10 @@ export class TabularGenerator {
 
       this.initialized = true;
       this.logger.info('Tabular generator initialized successfully', { backend: this.backend });
-
     } catch (error) {
-      this.logger.error('Tabular generator initialization failed', { 
-        backend: this.backend, 
-        error: error.message 
+      this.logger.error('Tabular generator initialization failed', {
+        backend: this.backend,
+        error: error.message,
       });
       throw error;
     }
@@ -56,7 +55,7 @@ export class TabularGenerator {
       type: 'gaussian_copula',
       correlations: {},
       distributions: {},
-      constraints: []
+      constraints: [],
     };
 
     this.logger.info('SDV/Gaussian Copula model initialized');
@@ -70,12 +69,12 @@ export class TabularGenerator {
       epochs: this.params.epochs || 300,
       batchSize: this.params.batchSize || 500,
       generator: null,
-      discriminator: null
+      discriminator: null,
     };
 
-    this.logger.info('CTGAN model initialized', { 
+    this.logger.info('CTGAN model initialized', {
       epochs: this.model.epochs,
-      batchSize: this.model.batchSize 
+      batchSize: this.model.batchSize,
     });
   }
 
@@ -84,7 +83,7 @@ export class TabularGenerator {
     this.model = {
       type: 'basic',
       fieldGenerators: {},
-      correlations: {}
+      correlations: {},
     };
 
     // Set up field generators based on schema
@@ -110,7 +109,7 @@ export class TabularGenerator {
           type: 'integer',
           min: definition.min || 0,
           max: definition.max || 100,
-          generator: () => Math.floor(Math.random() * (definition.max - definition.min + 1)) + definition.min
+          generator: () => Math.floor(Math.random() * (definition.max - definition.min + 1)) + definition.min,
         };
 
       case 'float':
@@ -123,7 +122,7 @@ export class TabularGenerator {
           generator: () => {
             const value = Math.random() * (definition.max - definition.min) + definition.min;
             return Math.round(value * Math.pow(10, definition.precision)) / Math.pow(10, definition.precision);
-          }
+          },
         };
 
       case 'string':
@@ -137,26 +136,28 @@ export class TabularGenerator {
               return definition.enum[Math.floor(Math.random() * definition.enum.length)];
             }
             return this.generateRandomString(definition.length || 10);
-          }
+          },
         };
 
       case 'email':
+        const domains = definition.domains || ['example.com', 'test.org', 'demo.net'];
         return {
           type: 'email',
-          domains: definition.domains || ['example.com', 'test.org', 'demo.net'],
+          domains: domains,
           generator: () => {
             const username = this.generateRandomString(8);
-            const domain = definition.domains[Math.floor(Math.random() * definition.domains.length)];
+            const domain = domains[Math.floor(Math.random() * domains.length)];
             return `${username}@${domain}`;
-          }
+          },
         };
 
       case 'boolean':
       case 'bool':
+        const probability = definition.probability || 0.5;
         return {
           type: 'boolean',
-          probability: definition.probability || 0.5,
-          generator: () => Math.random() < definition.probability
+          probability: probability,
+          generator: () => Math.random() < probability,
         };
 
       case 'date':
@@ -170,27 +171,28 @@ export class TabularGenerator {
             const end = definition.end ? new Date(definition.end) : new Date();
             const randomTime = start.getTime() + Math.random() * (end.getTime() - start.getTime());
             return new Date(randomTime).toISOString();
-          }
+          },
         };
 
       case 'uuid':
         return {
           type: 'uuid',
-          generator: () => crypto.randomUUID()
+          generator: () => crypto.randomUUID(),
         };
 
       case 'categorical':
+        const categories = definition.categories || definition.enum || ['A', 'B', 'C'];
+        const weights = definition.weights;
         return {
           type: 'categorical',
-          categories: definition.categories || definition.enum || ['A', 'B', 'C'],
-          weights: definition.weights,
+          categories: categories,
+          weights: weights,
           generator: () => {
-            const categories = definition.categories || definition.enum || ['A', 'B', 'C'];
-            if (definition.weights && definition.weights.length === categories.length) {
-              return this.weightedRandomChoice(categories, definition.weights);
+            if (weights && weights.length === categories.length) {
+              return this.weightedRandomChoice(categories, weights);
             }
             return categories[Math.floor(Math.random() * categories.length)];
-          }
+          },
         };
 
       case 'json':
@@ -202,13 +204,13 @@ export class TabularGenerator {
               return this.generateFromTemplate(definition.template);
             }
             return { id: Math.floor(Math.random() * 1000), value: this.generateRandomString(5) };
-          }
+          },
         };
 
       default:
         return {
           type: 'string',
-          generator: () => this.generateRandomString(10)
+          generator: () => this.generateRandomString(10),
         };
     }
   }
@@ -225,20 +227,20 @@ export class TabularGenerator {
   weightedRandomChoice(choices, weights) {
     const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
     let random = Math.random() * totalWeight;
-    
+
     for (let i = 0; i < choices.length; i++) {
       random -= weights[i];
       if (random <= 0) {
         return choices[i];
       }
     }
-    
+
     return choices[choices.length - 1];
   }
 
   generateFromTemplate(template) {
     const result = {};
-    
+
     for (const [key, value] of Object.entries(template)) {
       if (typeof value === 'string' && value.startsWith('$')) {
         // Template variable
@@ -250,7 +252,7 @@ export class TabularGenerator {
         result[key] = value;
       }
     }
-    
+
     return result;
   }
 
@@ -276,17 +278,12 @@ export class TabularGenerator {
       throw new Error('Generator not initialized');
     }
 
-    const {
+    const { numRecords, seed, conditions = {}, onProgress = () => {} } = options;
+
+    this.logger.info('Starting tabular data generation', {
       numRecords,
       seed,
-      conditions = {},
-      onProgress = () => {}
-    } = options;
-
-    this.logger.info('Starting tabular data generation', { 
-      numRecords, 
-      seed, 
-      backend: this.backend 
+      backend: this.backend,
     });
 
     // Set random seed if provided
@@ -301,7 +298,7 @@ export class TabularGenerator {
     while (generated < numRecords) {
       const currentBatchSize = Math.min(batchSize, numRecords - generated);
       const batch = await this.generateBatch(currentBatchSize, conditions);
-      
+
       data.push(...batch);
       generated += currentBatchSize;
 
@@ -316,9 +313,9 @@ export class TabularGenerator {
     // Apply post-generation processing
     const processedData = this.postProcessData(data, options);
 
-    this.logger.info('Tabular data generation completed', { 
+    this.logger.info('Tabular data generation completed', {
       recordsGenerated: processedData.length,
-      backend: this.backend 
+      backend: this.backend,
     });
 
     return processedData;
@@ -336,7 +333,7 @@ export class TabularGenerator {
       next: () => {
         current = (current * 1103515245 + 12345) & 0x7fffffff;
         return current / 0x7fffffff;
-      }
+      },
     };
   }
 
@@ -361,9 +358,9 @@ export class TabularGenerator {
         record[fieldName] = this.applyCondition(conditions[fieldName], generator);
       } else {
         // Generate normally
-        record[fieldName] = this.randomState ? 
-          this.generateWithSeed(generator, this.randomState) : 
-          generator.generator();
+        record[fieldName] = this.randomState
+          ? this.generateWithSeed(generator, this.randomState)
+          : generator.generator();
       }
     }
 
@@ -377,7 +374,7 @@ export class TabularGenerator {
     // Use seeded random for deterministic generation
     const originalRandom = Math.random;
     Math.random = randomState.next;
-    
+
     try {
       return generator.generator();
     } finally {
@@ -393,14 +390,14 @@ export class TabularGenerator {
       if (condition.min !== undefined || condition.max !== undefined) {
         const min = condition.min !== undefined ? condition.min : generator.min;
         const max = condition.max !== undefined ? condition.max : generator.max;
-        
+
         if (generator.type === 'integer') {
           return Math.floor(Math.random() * (max - min + 1)) + min;
         } else if (generator.type === 'float') {
           return Math.random() * (max - min) + min;
         }
       }
-      
+
       // Handle enum conditions
       if (condition.enum) {
         return condition.enum[Math.floor(Math.random() * condition.enum.length)];
@@ -416,7 +413,7 @@ export class TabularGenerator {
   applyCorrelations(record) {
     // Apply simple correlation logic
     // In a real implementation, this would use proper statistical correlations
-    
+
     if (this.model.correlations) {
       for (const [field1, correlatedFields] of Object.entries(this.model.correlations)) {
         if (record[field1] !== undefined) {
@@ -514,9 +511,9 @@ export class TabularGenerator {
 
   async fit(trainingData) {
     // Train the model on real data (for SDV/CTGAN)
-    this.logger.info('Training tabular generator on real data', { 
+    this.logger.info('Training tabular generator on real data', {
       records: trainingData.length,
-      backend: this.backend 
+      backend: this.backend,
     });
 
     switch (this.backend.toLowerCase()) {
@@ -540,17 +537,17 @@ export class TabularGenerator {
     if (trainingData.length === 0) return;
 
     const fields = Object.keys(trainingData[0]);
-    
+
     // Calculate correlations
     for (const field1 of fields) {
       if (typeof trainingData[0][field1] === 'number') {
         this.model.correlations[field1] = {};
-        
+
         for (const field2 of fields) {
           if (field1 !== field2 && typeof trainingData[0][field2] === 'number') {
             this.model.correlations[field1][field2] = this.calculateCorrelation(
               trainingData.map(r => r[field1]),
-              trainingData.map(r => r[field2])
+              trainingData.map(r => r[field2]),
             );
           }
         }
@@ -574,16 +571,16 @@ export class TabularGenerator {
     if (trainingData.length === 0) return;
 
     const fields = Object.keys(trainingData[0]);
-    
+
     // Update field generators based on training data
     for (const field of fields) {
       const values = trainingData.map(r => r[field]);
       const nonNullValues = values.filter(v => v !== null && v !== undefined);
-      
+
       if (nonNullValues.length === 0) continue;
 
       const sampleValue = nonNullValues[0];
-      
+
       if (typeof sampleValue === 'number') {
         this.model.fieldGenerators[field] = {
           type: Number.isInteger(sampleValue) ? 'integer' : 'float',
@@ -593,17 +590,17 @@ export class TabularGenerator {
           generator: () => {
             const min = Math.min(...nonNullValues);
             const max = Math.max(...nonNullValues);
-            return Number.isInteger(sampleValue) ? 
-              Math.floor(Math.random() * (max - min + 1)) + min :
-              Math.random() * (max - min) + min;
-          }
+            return Number.isInteger(sampleValue)
+              ? Math.floor(Math.random() * (max - min + 1)) + min
+              : Math.random() * (max - min) + min;
+          },
         };
       } else if (typeof sampleValue === 'string') {
         const uniqueValues = [...new Set(nonNullValues)];
         this.model.fieldGenerators[field] = {
           type: 'categorical',
           categories: uniqueValues,
-          generator: () => uniqueValues[Math.floor(Math.random() * uniqueValues.length)]
+          generator: () => uniqueValues[Math.floor(Math.random() * uniqueValues.length)],
         };
       } else if (typeof sampleValue === 'boolean') {
         const trueCount = nonNullValues.filter(v => v === true).length;
@@ -611,7 +608,7 @@ export class TabularGenerator {
         this.model.fieldGenerators[field] = {
           type: 'boolean',
           probability: probability,
-          generator: () => Math.random() < probability
+          generator: () => Math.random() < probability,
         };
       }
     }
@@ -642,37 +639,37 @@ export class TabularGenerator {
 
   analyzeDistribution(values) {
     const nonNullValues = values.filter(v => v !== null && v !== undefined);
-    
+
     if (nonNullValues.length === 0) {
       return { type: 'empty' };
     }
 
     const sampleValue = nonNullValues[0];
-    
+
     if (typeof sampleValue === 'number') {
       const mean = nonNullValues.reduce((sum, v) => sum + v, 0) / nonNullValues.length;
       const variance = nonNullValues.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / nonNullValues.length;
-      
+
       return {
         type: 'numeric',
         mean: mean,
         variance: variance,
         min: Math.min(...nonNullValues),
-        max: Math.max(...nonNullValues)
+        max: Math.max(...nonNullValues),
       };
     } else {
       const uniqueValues = [...new Set(nonNullValues)];
       const frequencies = {};
-      
+
       for (const value of nonNullValues) {
         frequencies[value] = (frequencies[value] || 0) + 1;
       }
-      
+
       return {
         type: 'categorical',
         uniqueValues: uniqueValues,
         frequencies: frequencies,
-        cardinality: uniqueValues.length
+        cardinality: uniqueValues.length,
       };
     }
   }
@@ -683,7 +680,7 @@ export class TabularGenerator {
       initialized: this.initialized,
       modelType: this.model?.type,
       fieldCount: Object.keys(this.model?.fieldGenerators || {}).length,
-      hasCorrelations: Object.keys(this.model?.correlations || {}).length > 0
+      hasCorrelations: Object.keys(this.model?.correlations || {}).length > 0,
     };
   }
 
