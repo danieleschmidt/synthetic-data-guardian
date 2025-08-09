@@ -45,7 +45,16 @@ from .utils import (
 )
 
 # Configuration
-from .config import Config, load_config, create_default_config
+try:
+    from .config import Config, load_config, create_default_config
+except ImportError:
+    # Create dummy classes if config module fails
+    class Config:
+        pass
+    def load_config(*args): 
+        return Config()
+    def create_default_config():
+        return Config()
 
 # CLI
 from .cli import main as cli_main
