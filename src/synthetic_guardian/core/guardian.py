@@ -12,8 +12,7 @@ from pathlib import Path
 from ..utils.logger import get_logger
 from ..utils.config import Config
 from .pipeline import GenerationPipeline
-from .result import GenerationResult
-from .validation_report import ValidationReport
+from .result import GenerationResult, ValidationReport
 from ..validators.base import BaseValidator
 from ..generators.base import BaseGenerator
 from ..watermarks.base import BaseWatermarker
