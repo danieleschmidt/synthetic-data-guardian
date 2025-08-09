@@ -4,7 +4,13 @@ Configuration management with validation, environment variable support, and sche
 
 import os
 import json
-import yaml
+
+try:
+    import yaml
+    HAS_YAML = True
+except ImportError:
+    HAS_YAML = False
+    yaml = None
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List
 from dataclasses import dataclass, field, asdict
@@ -160,6 +166,8 @@ class Config:
     
     def to_yaml(self) -> str:
         """Convert to YAML string."""
+        if not HAS_YAML:
+            raise RuntimeError("PyYAML is required for YAML support")
         return yaml.dump(self.to_dict(), default_flow_style=False)
     
     def save(self, path: Union[str, Path]) -> None:
@@ -167,7 +175,7 @@ class Config:
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         
-        if path.suffix.lower() in [".yaml", ".yml"]:
+        if path.suffix.lower() in [".yaml", ".yml"] and HAS_YAML:
             with open(path, 'w') as f:
                 f.write(self.to_yaml())
         else:
@@ -192,8 +200,11 @@ def load_config(
             logger.info(f"Loading configuration from {config_path}")
             
             with open(config_path) as f:
-                if config_path.suffix.lower() in [".yaml", ".yml"]:
+                if config_path.suffix.lower() in [".yaml", ".yml"] and HAS_YAML:
                     config_dict = yaml.safe_load(f) or {}
+                elif config_path.suffix.lower() in [".yaml", ".yml"] and not HAS_YAML:
+                    logger.warning("PyYAML not available, cannot load YAML config")
+                    config_dict = {}
                 else:
                     config_dict = json.load(f)
         else:
