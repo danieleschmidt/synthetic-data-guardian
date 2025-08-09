@@ -14,7 +14,6 @@ from typing import Dict, Any
 
 from .core.guardian import Guardian
 from .utils.logger import get_logger, configure_logging
-from .utils.config import load_config
 
 
 def create_parser():
@@ -486,7 +485,11 @@ async def main_async(args=None):
     # Load configuration
     config = {}
     if args.config and args.config.exists():
-        config = load_config(args.config)
+        try:
+            from .config import load_config
+            config = load_config(args.config)
+        except ImportError:
+            print("Configuration loading not available - using defaults")
     
     # Route to command handler
     if args.command == 'generate':
