@@ -1,0 +1,113 @@
+{
+  "overall_passed": false,
+  "overall_score": 83.12135358651479,
+  "total_duration": 14.596182584762573,
+  "gates_passed": 6,
+  "gates_total": 8,
+  "gates": {
+    "Unit Tests": {
+      "passed": false,
+      "score": 0.0,
+      "duration": 0.03115248680114746,
+      "details": {
+        "exit_code": 1,
+        "test_summary": [],
+        "stdout": "",
+        "stderr": "/usr/bin/python3: No module named pytest\n"
+      },
+      "errors": [
+        "Unit tests failed",
+        "/usr/bin/python3: No module named pytest",
+        ""
+      ]
+    },
+    "Integration Tests": {
+      "passed": true,
+      "score": 100.0,
+      "duration": 13.275456666946411,
+      "details": {
+        "passed_tests": 4,
+        "total_tests": 4,
+        "pass_rate": 100.0
+      },
+      "errors": []
+    },
+    "Performance Tests": {
+      "passed": true,
+      "score": 99.97082869211833,
+      "duration": 0.9386906623840332,
+      "details": {
+        "total_time": 0.008751392364501953,
+        "avg_generation_time": 0.001901388168334961,
+        "generation_times": [
+          0.002432107925415039,
+          0.0018253326416015625,
+          0.0014467239379882812
+        ],
+        "max_total_time": 30.0,
+        "max_avg_generation": 5.0
+      },
+      "errors": []
+    },
+    "Security Scan": {
+      "passed": false,
+      "score": 90.0,
+      "duration": 0.011845827102661133,
+      "details": {
+        "issues_found": 1,
+        "security_score": 90.0
+      },
+      "errors": [
+        "input_validator.py: Use of input() without validation"
+      ]
+    },
+    "Code Quality": {
+      "passed": true,
+      "score": 100.0,
+      "duration": 0.008542060852050781,
+      "details": {
+        "total_files": 35,
+        "total_lines": 10428,
+        "quality_score": 100.0,
+        "readme_exists": true
+      },
+      "errors": []
+    },
+    "Memory Leak Detection": {
+      "passed": true,
+      "score": 100.0,
+      "duration": 0.31229662895202637,
+      "details": {
+        "initial_memory_mb": 113.78515625,
+        "final_memory_mb": 113.78515625,
+        "memory_increase_mb": 0.0,
+        "max_allowed_increase_mb": 100
+      },
+      "errors": []
+    },
+    "Dependency Check": {
+      "passed": true,
+      "score": 100.0,
+      "duration": 0.017066240310668945,
+      "details": {
+        "critical_imports_tested": 7,
+        "failed_imports": 0,
+        "missing_packages": 0
+      },
+      "errors": []
+    },
+    "Documentation Check": {
+      "passed": true,
+      "score": 75.0,
+      "duration": 0.0008828639984130859,
+      "details": {
+        "documentation_score": 75.0,
+        "missing_docs": 1,
+        "undocumented_modules": 0
+      },
+      "errors": [
+        "CLAUDE.md: Claude Code configuration"
+      ]
+    }
+  }
+}
