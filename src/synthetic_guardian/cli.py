@@ -8,7 +8,10 @@ import asyncio
 import sys
 import argparse
 import json
-import yaml
+try:
+    import yaml
+except ImportError:
+    yaml = None
 from pathlib import Path
 from typing import Dict, Any
 
@@ -169,6 +172,9 @@ async def command_generate(args, config):
         
         with open(pipeline_path) as f:
             if pipeline_path.suffix in ['.yaml', '.yml']:
+                if yaml is None:
+                    logger.error("YAML support not available. Install PyYAML: pip install pyyaml")
+                    return 1
                 pipeline_config = yaml.safe_load(f)
             else:
                 pipeline_config = json.load(f)
