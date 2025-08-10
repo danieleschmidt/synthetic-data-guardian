@@ -1,0 +1,228 @@
+version: '3.8'
+
+# Production Docker Compose configuration for Synthetic Data Guardian
+# Includes all services needed for enterprise deployment
+
+services:
+  # Main application service
+  synthetic-guardian:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: synthetic-guardian:latest
+    container_name: synthetic-guardian-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "8081:8081"  # Health/metrics port
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+      - LOG_FORMAT=json
+      - PYTHONUNBUFFERED=1
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://guardian:guardian_pass@postgres:5432/guardian_db
+      - MONITORING_ENABLED=true
+      - CACHE_ENABLED=true
+      - SECURITY_LEVEL=strict
+      - MAX_CONCURRENT_GENERATIONS=10
+      - MAX_MEMORY_MB=4096
+    volumes:
+      - guardian_data:/home/synthetic_guardian/data
+      - guardian_logs:/home/synthetic_guardian/logs
+      - guardian_cache:/home/synthetic_guardian/cache
+      - guardian_models:/home/synthetic_guardian/models
+    depends_on:
+      - redis
+      - postgres
+      - prometheus
+    networks:
+      - guardian_network
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Redis for caching and session storage
+  redis:
+    image: redis:7-alpine
+    container_name: synthetic-guardian-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./config/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - guardian_network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # PostgreSQL for metadata and audit logs
+  postgres:
+    image: postgres:16-alpine
+    container_name: synthetic-guardian-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=guardian_db
+      - POSTGRES_USER=guardian
+      - POSTGRES_PASSWORD=guardian_pass
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - guardian_network
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U guardian -d guardian_db"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: synthetic-guardian-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.retention.time=30d'
+    networks:
+      - guardian_network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+
+  # Grafana for monitoring dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: synthetic-guardian-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin_password_change_me
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_SECURITY_DISABLE_GRAVATAR=true
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - guardian_network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+
+  # NGINX reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: synthetic-guardian-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - synthetic-guardian
+    networks:
+      - guardian_network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.2'
+
+  # Log aggregation with Fluentd
+  fluentd:
+    image: fluent/fluentd:latest
+    container_name: synthetic-guardian-fluentd
+    restart: unless-stopped
+    environment:
+      - FLUENTD_CONF=fluent.conf
+    volumes:
+      - ./config/fluentd/fluent.conf:/fluentd/etc/fluent.conf:ro
+      - guardian_logs:/var/log/guardian
+      - nginx_logs:/var/log/nginx
+    networks:
+      - guardian_network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+
+networks:
+  guardian_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  guardian_data:
+    driver: local
+  guardian_logs:
+    driver: local
+  guardian_cache:
+    driver: local
+  guardian_models:
+    driver: local
+  redis_data:
+    driver: local
+  postgres_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  nginx_logs:
+    driver: local
