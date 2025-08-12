@@ -60,7 +60,7 @@ click>=8.1.0,<9.0.0
 # Performance & Profiling
 py-spy>=0.3.14,<1.0.0
 memory-profiler>=0.61.0,<1.0.0
-line-profiler>=4.1.0,<5.0.0
+line-profiler>=4.1.0,<6.0.0
 scalene>=1.5.0,<2.0.0
 
 # Data Science & ML Development
