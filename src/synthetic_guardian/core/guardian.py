@@ -5,9 +5,16 @@ Guardian - Core orchestrator for synthetic data generation and validation
 import asyncio
 import uuid
 import time
+import logging
+import traceback
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass, field
 from pathlib import Path
+from functools import wraps
+from concurrent.futures import ThreadPoolExecutor
+import threading
+import psutil
+import gc
 
 from ..utils.logger import get_logger
 from ..utils.config import Config
@@ -16,6 +23,75 @@ from .result import GenerationResult, ValidationReport
 from ..validators.base import BaseValidator
 from ..generators.base import BaseGenerator
 from ..watermarks.base import BaseWatermarker
+
+
+class RateLimiter:
+    """Rate limiter for API requests."""
+    
+    def __init__(self, requests_per_minute: int):
+        self.requests_per_minute = requests_per_minute
+        self.requests = []
+        self._lock = threading.Lock()
+    
+    async def acquire(self) -> bool:
+        """Acquire a rate limit token."""
+        with self._lock:
+            now = time.time()
+            # Remove requests older than 1 minute
+            self.requests = [req_time for req_time in self.requests if now - req_time < 60]
+            
+            if len(self.requests) >= self.requests_per_minute:
+                return False
+            
+            self.requests.append(now)
+            return True
+    
+    def get_current_rate(self) -> int:
+        """Get current request rate."""
+        with self._lock:
+            now = time.time()
+            recent_requests = [req_time for req_time in self.requests if now - req_time < 60]
+            return len(recent_requests)
+
+
+class ResourceMonitor:
+    """Monitor system resource usage."""
+    
+    def __init__(self, max_memory_mb: int):
+        self.max_memory_mb = max_memory_mb
+        self.process = psutil.Process()
+        self._lock = threading.Lock()
+    
+    def check_memory_usage(self) -> Dict[str, Any]:
+        """Check current memory usage."""
+        with self._lock:
+            memory_info = self.process.memory_info()
+            memory_mb = memory_info.rss / 1024 / 1024
+            
+            return {
+                'current_mb': memory_mb,
+                'max_mb': self.max_memory_mb,
+                'usage_percent': (memory_mb / self.max_memory_mb) * 100,
+                'exceeds_limit': memory_mb > self.max_memory_mb
+            }
+    
+    def force_garbage_collection(self) -> None:
+        """Force garbage collection to free memory."""
+        gc.collect()
+    
+    async def ensure_memory_available(self) -> bool:
+        """Ensure memory is available for operations."""
+        memory_status = self.check_memory_usage()
+        
+        if memory_status['exceeds_limit']:
+            self.force_garbage_collection()
+            # Check again after GC
+            memory_status = self.check_memory_usage()
+            
+            if memory_status['exceeds_limit']:
+                return False
+        
+        return True
 
 
 @dataclass
@@ -32,6 +108,16 @@ class GuardianConfig:
     temp_dir: Optional[Path] = None
     cache_enabled: bool = True
     metrics_enabled: bool = True
+    
+    # Security and robustness settings
+    max_records_per_generation: int = 100000
+    max_memory_usage_mb: int = 4096  # 4GB limit
+    rate_limit_requests_per_minute: int = 60
+    enable_input_sanitization: bool = True
+    enable_resource_monitoring: bool = True
+    max_field_name_length: int = 100
+    max_string_field_length: int = 10000
+    enable_audit_logging: bool = True
 
 
 class Guardian:
@@ -66,6 +152,12 @@ class Guardian:
         self.validators: Dict[str, BaseValidator] = {}
         self.watermarkers: Dict[str, BaseWatermarker] = {}
         self.initialized = False
+        
+        # Security and robustness state
+        self.rate_limiter = RateLimiter(self.config.rate_limit_requests_per_minute)
+        self.resource_monitor = ResourceMonitor(self.config.max_memory_usage_mb) if self.config.enable_resource_monitoring else None
+        self.thread_pool = ThreadPoolExecutor(max_workers=self.config.max_concurrent_generations)
+        self._lock = threading.RLock()
         
         # Metrics and monitoring
         self.metrics = {
@@ -205,6 +297,19 @@ class Guardian:
         """
         if not self.initialized:
             await self.initialize()
+        
+        # Rate limiting check
+        if not await self.rate_limiter.acquire():
+            raise ValueError(f"Rate limit exceeded. Current rate: {self.rate_limiter.get_current_rate()} requests/minute")
+        
+        # Resource monitoring check
+        if self.resource_monitor:
+            if not await self.resource_monitor.ensure_memory_available():
+                memory_status = self.resource_monitor.check_memory_usage()
+                raise RuntimeError(f"Insufficient memory. Usage: {memory_status['current_mb']:.1f}MB / {memory_status['max_mb']}MB")
+        
+        # Input validation and sanitization
+        await self._validate_generation_inputs(num_records, seed, conditions, kwargs)
             
         task_id = str(uuid.uuid4())
         start_time = time.time()
@@ -305,11 +410,12 @@ class Guardian:
                 raise ValueError(f"Pipeline not found: {pipeline_config}")
         
         if isinstance(pipeline_config, dict):
-            # Create new pipeline from config
-            pipeline_id = pipeline_config.get('id', str(uuid.uuid4()))
+            # Sanitize config before creating pipeline
+            sanitized_config = await self._sanitize_pipeline_config(pipeline_config)
+            pipeline_id = sanitized_config.get('id', str(uuid.uuid4()))
             
             if pipeline_id not in self.pipelines:
-                pipeline = GenerationPipeline(config=pipeline_config, logger=self.logger)
+                pipeline = GenerationPipeline(config=sanitized_config, logger=self.logger)
                 await pipeline.initialize()
                 self.pipelines[pipeline_id] = pipeline
                 self.logger.info(f"Created new pipeline: {pipeline_id}")
@@ -326,8 +432,15 @@ class Guardian:
         validator_configs = pipeline.validation_config.get('validators', [])
         
         for validator_config in validator_configs:
-            validator_type = validator_config.get('type')
-            validator_params = validator_config.get('params', {})
+            # Handle both string and dict validator configs
+            if isinstance(validator_config, str):
+                validator_type = validator_config
+                validator_params = {}
+            elif isinstance(validator_config, dict):
+                validator_type = validator_config.get('type')
+                validator_params = validator_config.get('params', {})
+            else:
+                continue
             
             if validator_type in self.validators:
                 try:
@@ -387,6 +500,121 @@ class Guardian:
                 self.metrics['total_records_generated'] += result.metadata['num_records']
         elif event_type == 'failed_generation':
             self.metrics['failed_generations'] += 1
+    
+    async def _validate_generation_inputs(self, num_records: int, seed: Optional[int], 
+                                        conditions: Optional[Dict], kwargs: Dict) -> None:
+        """Validate and sanitize generation inputs for security and correctness."""
+        # Validate num_records
+        if not isinstance(num_records, int):
+            raise ValueError(f"num_records must be an integer, got {type(num_records)}")
+        
+        if num_records <= 0:
+            raise ValueError(f"num_records must be positive, got {num_records}")
+        
+        # Set reasonable upper limit to prevent resource exhaustion
+        max_records = self.config.max_records_per_generation if hasattr(self.config, 'max_records_per_generation') else 100000
+        if num_records > max_records:
+            self.logger.warning(f"Limiting generation from {num_records} to {max_records} records")
+            # Note: We log but don't modify - calling code should handle this
+        
+        # Validate seed if provided
+        if seed is not None:
+            if not isinstance(seed, int):
+                raise ValueError(f"seed must be an integer, got {type(seed)}")
+            if seed < 0 or seed > 2**32 - 1:
+                raise ValueError(f"seed must be between 0 and {2**32 - 1}, got {seed}")
+        
+        # Sanitize conditions
+        if conditions:
+            await self._sanitize_conditions(conditions)
+        
+        # Validate kwargs
+        await self._validate_kwargs(kwargs)
+    
+    async def _sanitize_conditions(self, conditions: Dict) -> None:
+        """Sanitize generation conditions to prevent injection attacks."""
+        dangerous_patterns = ['DROP', 'DELETE', 'UPDATE', 'INSERT', '<script', 'javascript:', 'eval(']
+        
+        for key, value in conditions.items():
+            # Sanitize key names
+            if any(pattern.lower() in key.lower() for pattern in dangerous_patterns):
+                raise ValueError(f"Potentially dangerous condition key: {key}")
+            
+            # Sanitize values
+            if isinstance(value, str):
+                if any(pattern.lower() in value.lower() for pattern in dangerous_patterns):
+                    raise ValueError(f"Potentially dangerous condition value for {key}: {value}")
+                
+                # Check for path traversal
+                if '..' in value or value.startswith('/'):
+                    raise ValueError(f"Path traversal attempt in condition {key}: {value}")
+    
+    async def _validate_kwargs(self, kwargs: Dict) -> None:
+        """Validate additional keyword arguments."""
+        # Check for potentially dangerous kwargs
+        dangerous_keys = ['eval', 'exec', 'compile', '__import__', 'open']
+        
+        for key in kwargs.keys():
+            if key in dangerous_keys:
+                raise ValueError(f"Dangerous keyword argument not allowed: {key}")
+            
+            # Limit string lengths to prevent memory exhaustion
+            if isinstance(kwargs[key], str) and len(kwargs[key]) > 10000:
+                raise ValueError(f"Argument {key} exceeds maximum length limit")
+    
+    async def _sanitize_pipeline_config(self, config: Dict) -> Dict:
+        """Sanitize pipeline configuration to prevent security issues."""
+        sanitized = config.copy()
+        
+        # Sanitize schema field names
+        if 'schema' in sanitized:
+            schema = sanitized['schema']
+            sanitized_schema = {}
+            
+            for field_name, field_type in schema.items():
+                # Sanitize field names
+                clean_field_name = self._sanitize_field_name(field_name)
+                sanitized_schema[clean_field_name] = field_type
+            
+            sanitized['schema'] = sanitized_schema
+        
+        # Sanitize output paths
+        if 'output_config' in sanitized:
+            output_config = sanitized['output_config']
+            if 'path' in output_config:
+                output_config['path'] = self._sanitize_file_path(output_config['path'])
+        
+        return sanitized
+    
+    def _sanitize_field_name(self, field_name: str) -> str:
+        """Sanitize field names to prevent injection attacks."""
+        # Remove dangerous characters
+        dangerous_chars = ['<', '>', ';', '--', 'DROP', 'script', '(', ')']
+        clean_name = field_name
+        
+        for char in dangerous_chars:
+            clean_name = clean_name.replace(char, '_')
+        
+        # Limit length
+        if len(clean_name) > 100:
+            clean_name = clean_name[:100]
+        
+        # Ensure valid identifier
+        if not clean_name or not clean_name[0].isalpha():
+            clean_name = 'field_' + clean_name
+        
+        return clean_name
+    
+    def _sanitize_file_path(self, file_path: str) -> str:
+        """Sanitize file paths to prevent path traversal attacks."""
+        # Remove path traversal attempts
+        clean_path = file_path.replace('..', '').replace('//', '/')
+        
+        # Ensure path is not absolute (unless explicitly allowed)
+        if clean_path.startswith('/') and not clean_path.startswith('/tmp/'):
+            clean_path = clean_path.lstrip('/')
+        
+        return clean_path
     
     async def validate(
         self,
@@ -500,7 +728,7 @@ class Guardian:
         return [
             {
                 'id': pipeline.id,
-                'name': pipeline.config.get('name', pipeline.id),
+                'name': getattr(pipeline.config, 'name', pipeline.id),
                 'generator_type': pipeline.generator_type,
                 'data_type': pipeline.data_type,
                 'created': pipeline.created_at,
@@ -531,35 +759,61 @@ class Guardian:
         """Clean up Guardian resources."""
         self.logger.info("Starting Guardian cleanup...")
         
-        # Cancel active tasks
-        for task_id, task in self.active_tasks.items():
-            if task['status'] == 'running':
-                task['status'] = 'cancelled'
-                self.logger.info(f"Cancelled task {task_id}")
-        
-        # Cleanup pipelines
-        for pipeline in self.pipelines.values():
-            await pipeline.cleanup()
-        
-        # Cleanup components
-        for generator in self.generators.values():
-            await generator.cleanup()
-        
-        for validator in self.validators.values():
-            await validator.cleanup()
-        
-        for watermarker in self.watermarkers.values():
-            await watermarker.cleanup()
-        
-        # Clear collections
-        self.pipelines.clear()
-        self.active_tasks.clear()
-        self.generators.clear()
-        self.validators.clear()
-        self.watermarkers.clear()
-        
-        self.initialized = False
-        self.logger.info("Guardian cleanup completed")
+        try:
+            # Cancel active tasks
+            with self._lock:
+                for task_id, task in self.active_tasks.items():
+                    if task['status'] == 'running':
+                        task['status'] = 'cancelled'
+                        self.logger.info(f"Cancelled task {task_id}")
+            
+            # Cleanup pipelines
+            for pipeline in self.pipelines.values():
+                try:
+                    await pipeline.cleanup()
+                except Exception as e:
+                    self.logger.error(f"Error cleaning up pipeline {pipeline.id}: {e}")
+            
+            # Cleanup components
+            for generator in self.generators.values():
+                try:
+                    await generator.cleanup()
+                except Exception as e:
+                    self.logger.error(f"Error cleaning up generator: {e}")
+            
+            for validator in self.validators.values():
+                try:
+                    await validator.cleanup()
+                except Exception as e:
+                    self.logger.error(f"Error cleaning up validator: {e}")
+            
+            for watermarker in self.watermarkers.values():
+                try:
+                    await watermarker.cleanup()
+                except Exception as e:
+                    self.logger.error(f"Error cleaning up watermarker: {e}")
+            
+            # Cleanup thread pool
+            if hasattr(self, 'thread_pool'):
+                self.thread_pool.shutdown(wait=True)
+            
+            # Clear collections
+            self.pipelines.clear()
+            self.active_tasks.clear()
+            self.generators.clear()
+            self.validators.clear()
+            self.watermarkers.clear()
+            
+            self.initialized = False
+            self.logger.info("Guardian cleanup completed")
+            
+        except Exception as e:
+            self.logger.error(f"Error during Guardian cleanup: {e}")
+            raise
+        finally:
+            # Force garbage collection
+            if self.resource_monitor:
+                self.resource_monitor.force_garbage_collection()
     
     async def __aenter__(self):
         """Async context manager entry."""

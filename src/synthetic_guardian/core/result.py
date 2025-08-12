@@ -21,6 +21,11 @@ class ValidationReport:
     validator_results: Dict[str, Dict] = field(default_factory=dict)
     summary: Dict[str, Any] = field(default_factory=dict)
     
+    @property
+    def results(self) -> Dict[str, Dict]:
+        """Get validator results (alias for compatibility)."""
+        return self.validator_results
+    
     def add_validator_result(self, validator_name: str, result: Dict) -> None:
         """Add a validator result."""
         self.validator_results[validator_name] = result
