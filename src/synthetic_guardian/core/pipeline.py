@@ -82,6 +82,11 @@ class GenerationPipeline:
         """Get watermark configuration."""
         return self.config.watermark_config
     
+    @property
+    def schema(self) -> Dict[str, Any]:
+        """Get data schema."""
+        return self.config.schema
+    
     async def initialize(self) -> None:
         """Initialize pipeline and components."""
         if self.initialized:
