@@ -10,7 +10,7 @@ pytest-asyncio>=0.21.0,<1.0.0
 pytest-xdist>=3.3.0,<4.0.0
 pytest-benchmark>=4.0.0,<5.0.0
 pytest-timeout>=2.1.0,<3.0.0
-pytest-sugar>=0.9.7,<1.0.0
+pytest-sugar>=0.9.7,<2.0.0
 
 # Code Quality & Linting
 black>=23.9.0,<24.0.0
