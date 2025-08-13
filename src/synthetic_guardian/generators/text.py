@@ -59,10 +59,18 @@ class TextGenerator(BaseGenerator):
         start_time = time.time()
         texts = []
         
+        # Get templates and vocabulary with fallbacks
+        templates = getattr(self.config, 'templates', [
+            "This is a sample text with {placeholder}.",
+            "Generated content for {purpose} purposes.",
+            "Random text data: {value}"
+        ])
+        vocabulary = getattr(self.config, 'vocabulary', ["sample", "test", "data", "synthetic", "generated"])
+        
         for _ in range(num_records):
-            template = random.choice(self.config.templates)
+            template = random.choice(templates)
             text = template.format(
-                placeholder=random.choice(self.config.vocabulary),
+                placeholder=random.choice(vocabulary),
                 purpose=random.choice(["testing", "development", "research"]),
                 value=random.randint(1, 1000)
             )
