@@ -68,7 +68,11 @@ class TabularGenerator(BaseGenerator):
         
         try:
             # Initialize based on backend
-            backend = self.config.backend
+            backend = getattr(self.config, 'backend', 'gaussian_copula')
+            
+            # Check if config has parameters with backend info
+            if hasattr(self.config, 'parameters') and self.config.parameters:
+                backend = self.config.parameters.get('backend', backend)
             
             if backend == "gaussian_copula":
                 await self._initialize_gaussian_copula()
@@ -76,6 +80,8 @@ class TabularGenerator(BaseGenerator):
                 await self._initialize_ctgan()
             elif backend == "tvae":
                 await self._initialize_tvae()
+            elif backend == "simple":
+                await self._initialize_simple()
             else:
                 # Fallback to simple statistical generation
                 await self._initialize_simple()
