@@ -68,8 +68,11 @@ class TimeSeriesGenerator(BaseGenerator):
         
         try:
             # Set up default patterns if none specified
-            if not self.config.patterns:
-                self.config.patterns = ["trend", "seasonal", "noise"]
+            patterns = getattr(self.config, 'patterns', ["trend", "seasonal", "noise"])
+            if hasattr(self.config, 'parameters') and self.config.parameters:
+                patterns = self.config.parameters.get('patterns', patterns)
+            
+            self.patterns = patterns
             
             # Initialize pattern generators
             self.pattern_generators = {
@@ -111,7 +114,7 @@ class TimeSeriesGenerator(BaseGenerator):
                     data.index = pd.date_range(
                         start='2020-01-01',
                         periods=len(data),
-                        freq=self.config.sampling_frequency
+                        freq=getattr(self.config, 'sampling_frequency', 'D')
                     )
             
             # Analyze patterns in the data
@@ -262,20 +265,20 @@ class TimeSeriesGenerator(BaseGenerator):
             self.logger.info(f"Generating {num_records} time series data points...")
             
             # Create datetime index
-            start_date = kwargs.get('start_date', self.config.start_date)
+            start_date = kwargs.get('start_date', getattr(self.config, 'start_date', pd.Timestamp.now()))
             if start_date is None:
                 start_date = '2024-01-01'
             
             date_index = pd.date_range(
                 start=start_date,
                 periods=num_records,
-                freq=self.config.sampling_frequency
+                freq=getattr(self.config, 'sampling_frequency', 'D')
             )
             
             # Generate data for each feature
             data = {}
             
-            for feature in self.config.features:
+            for feature in getattr(self.config, 'features', ['value']):
                 series_data = await self._generate_feature_series(
                     feature, num_records, conditions
                 )
@@ -298,11 +301,11 @@ class TimeSeriesGenerator(BaseGenerator):
                 metadata={
                     'generation_time': generation_time,
                     'num_records': len(synthetic_data),
-                    'features': self.config.features,
-                    'patterns': self.config.patterns,
+                    'features': getattr(self.config, 'features', ['value']),
+                    'patterns': getattr(self, 'patterns', ['trend', 'seasonal', 'noise']),
                     'seed': seed,
                     'conditions': conditions or {},
-                    'sampling_frequency': self.config.sampling_frequency,
+                    'sampling_frequency': getattr(self.config, 'sampling_frequency', 'D'),
                     'start_date': start_date,
                     'validation_issues': validation_issues
                 }
@@ -339,7 +342,7 @@ class TimeSeriesGenerator(BaseGenerator):
             scale = 1.0
         
         # Generate each pattern component
-        for pattern in self.config.patterns:
+        for pattern in getattr(self, 'patterns', ['trend', 'seasonal', 'noise']):
             if pattern in self.pattern_generators:
                 component = await self.pattern_generators[pattern](
                     num_records, feature_name, conditions
@@ -364,13 +367,13 @@ class TimeSeriesGenerator(BaseGenerator):
         if feature_name in self.fitted_patterns:
             slope = self.fitted_patterns[feature_name]['trend_slope']
         else:
-            slope = self.config.trend_strength
+            slope = getattr(self.config, 'trend_strength', 0.1)
         
         # Linear trend
         time_points = np.arange(num_records)
         trend = slope * time_points
         
-        return trend * self.config.trend_strength
+        return trend * getattr(self.config, 'trend_strength', 0.1)
     
     async def _generate_seasonal(
         self,
@@ -395,7 +398,7 @@ class TimeSeriesGenerator(BaseGenerator):
         # Add harmonic
         seasonal += 0.3 * np.sin(4 * np.pi * time_points / period)
         
-        return seasonal * self.config.seasonality_strength
+        return seasonal * getattr(self.config, 'seasonality_strength', 1.0)
     
     async def _generate_cyclical(
         self,
@@ -423,7 +426,7 @@ class TimeSeriesGenerator(BaseGenerator):
     ) -> np.ndarray:
         """Generate noise component."""
         noise = np.random.normal(0, 1, num_records)
-        return noise * self.config.noise_level
+        return noise * getattr(self.config, 'noise_level', 0.1)
     
     async def _generate_random_walk(
         self,
@@ -440,24 +443,29 @@ class TimeSeriesGenerator(BaseGenerator):
         """Validate generator configuration."""
         issues = []
         
-        if self.config.sequence_length <= 0:
+        sequence_length = getattr(self.config, 'sequence_length', 100)
+        if sequence_length <= 0:
             issues.append("sequence_length must be positive")
         
-        if not self.config.features:
+        features = getattr(self.config, 'features', ['value'])
+        if not features:
             issues.append("features list cannot be empty")
         
-        if self.config.trend_strength < 0:
+        trend_strength = getattr(self.config, 'trend_strength', 0.1)
+        if trend_strength < 0:
             issues.append("trend_strength cannot be negative")
         
-        if self.config.seasonality_strength < 0:
+        seasonality_strength = getattr(self.config, 'seasonality_strength', 1.0)
+        if seasonality_strength < 0:
             issues.append("seasonality_strength cannot be negative")
         
-        if self.config.noise_level < 0:
+        noise_level = getattr(self.config, 'noise_level', 0.1)
+        if noise_level < 0:
             issues.append("noise_level cannot be negative")
         
         # Validate sampling frequency
         try:
-            pd.Timedelta(self.config.sampling_frequency)
+            pd.Timedelta(getattr(self.config, 'sampling_frequency', 'D'))
         except ValueError:
             issues.append("sampling_frequency must be a valid pandas frequency string")
         
