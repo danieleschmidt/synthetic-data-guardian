@@ -409,9 +409,39 @@ class Guardian:
             else:
                 raise ValueError(f"Pipeline not found: {pipeline_config}")
         
+        # Handle both dict and PipelineConfig objects
         if isinstance(pipeline_config, dict):
             # Sanitize config before creating pipeline
             sanitized_config = await self._sanitize_pipeline_config(pipeline_config)
+            pipeline_id = sanitized_config.get('id', str(uuid.uuid4()))
+            
+            if pipeline_id not in self.pipelines:
+                pipeline = GenerationPipeline(config=sanitized_config, logger=self.logger)
+                await pipeline.initialize()
+                self.pipelines[pipeline_id] = pipeline
+                self.logger.info(f"Created new pipeline: {pipeline_id}")
+            
+            return self.pipelines[pipeline_id]
+        
+        # Handle PipelineConfig objects by converting to dict
+        from .pipeline import PipelineConfig
+        if isinstance(pipeline_config, PipelineConfig):
+            config_dict = {
+                'id': pipeline_config.id,
+                'name': pipeline_config.name,
+                'description': pipeline_config.description,
+                'generator_type': pipeline_config.generator_type,
+                'generator_params': pipeline_config.generator_params,
+                'data_type': pipeline_config.data_type,
+                'schema': pipeline_config.schema,
+                'validation_config': pipeline_config.validation_config,
+                'watermark_config': pipeline_config.watermark_config,
+                'output_config': pipeline_config.output_config,
+                'metadata': pipeline_config.metadata
+            }
+            
+            # Sanitize and create pipeline
+            sanitized_config = await self._sanitize_pipeline_config(config_dict)
             pipeline_id = sanitized_config.get('id', str(uuid.uuid4()))
             
             if pipeline_id not in self.pipelines:
