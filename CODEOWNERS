@@ -1,0 +1,50 @@
+# Code Owners for Synthetic Data Guardian
+
+# Global ownership
+* @terragon-labs/core-team
+
+# Core architecture and pipeline
+/src/core/ @terragon-labs/core-team @terragon-labs/architects
+/src/synthetic_guardian/core/ @terragon-labs/core-team @terragon-labs/architects
+
+# Security and compliance
+/src/middleware/Security.js @terragon-labs/security-team
+/src/synthetic_guardian/middleware/advanced_security.py @terragon-labs/security-team
+/src/compliance/ @terragon-labs/security-team @terragon-labs/compliance
+/docs/security/ @terragon-labs/security-team
+
+# Testing and quality assurance
+/tests/ @terragon-labs/qa-team
+/test_*.py @terragon-labs/qa-team
+/jest.*.js @terragon-labs/qa-team
+/pytest.ini @terragon-labs/qa-team
+
+# Documentation
+/docs/ @terragon-labs/docs-team
+/README.md @terragon-labs/docs-team
+*.md @terragon-labs/docs-team
+
+# Infrastructure and deployment
+/docker-compose*.yml @terragon-labs/devops-team
+/Dockerfile* @terragon-labs/devops-team
+/scripts/ @terragon-labs/devops-team
+/Makefile @terragon-labs/devops-team
+
+# CI/CD and workflows
+/.github/ @terragon-labs/devops-team
+/docs/workflows/ @terragon-labs/devops-team
+
+# Package management and dependencies
+/package.json @terragon-labs/core-team @terragon-labs/devops-team
+/requirements*.txt @terragon-labs/core-team @terragon-labs/devops-team
+/pyproject.toml @terragon-labs/core-team @terragon-labs/devops-team
+
+# Configuration and settings
+*.config.js @terragon-labs/core-team
+*.config.ts @terragon-labs/core-team
+/.env.example @terragon-labs/devops-team
+
+# Legal and licensing
+/LICENSE @terragon-labs/legal
+/SECURITY.md @terragon-labs/security-team @terragon-labs/legal
+/CODE_OF_CONDUCT.md @terragon-labs/legal
