@@ -1,0 +1,672 @@
+# =============================================================================
+# Comprehensive CI/CD Pipeline Template
+# =============================================================================
+# This workflow provides complete CI/CD coverage including:
+# - Multi-language testing (Node.js, Python)
+# - Security scanning and code quality
+# - Performance testing and benchmarking
+# - Multi-architecture Docker builds
+# - Automated deployment to staging/production
+
+name: Comprehensive CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
+  pull_request:
+    branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
+  workflow_dispatch:
+    inputs:
+      deploy_environment:
+        description: 'Environment to deploy to'
+        required: false
+        default: 'staging'
+        type: choice
+        options:
+          - 'staging'
+          - 'production'
+      skip_tests:
+        description: 'Skip test execution'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+# Global permissions
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+  id-token: write
+  packages: write
+
+jobs:
+  # =============================================================================
+  # Change Detection & Preparation
+  # =============================================================================
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      node-changed: ${{ steps.changes.outputs.node }}
+      python-changed: ${{ steps.changes.outputs.python }}
+      docker-changed: ${{ steps.changes.outputs.docker }}
+      docs-changed: ${{ steps.changes.outputs.docs }}
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Detect file changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            node:
+              - 'package*.json'
+              - 'src/**/*.{js,ts,jsx,tsx}'
+              - 'tests/**/*.{js,ts,jsx,tsx}'
+              - '*.config.{js,ts}'
+              - 'tsconfig.json'
+            python:
+              - 'requirements*.txt'
+              - 'pyproject.toml'
+              - 'poetry.lock'
+              - 'src/**/*.py'
+              - 'tests/**/*.py'
+              - 'pytest.ini'
+            docker:
+              - 'Dockerfile*'
+              - 'docker-compose*.yml'
+              - '.dockerignore'
+            docs:
+              - 'docs/**'
+              - '**.md'
+
+  # =============================================================================
+  # Code Quality & Security Analysis
+  # =============================================================================
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: >
+      needs.detect-changes.outputs.node-changed == 'true' ||
+      needs.detect-changes.outputs.python-changed == 'true'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        if: needs.detect-changes.outputs.node-changed == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Setup Python
+        if: needs.detect-changes.outputs.python-changed == 'true'
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install Node.js dependencies
+        if: needs.detect-changes.outputs.node-changed == 'true'
+        run: npm ci
+        
+      - name: Install Python dependencies
+        if: needs.detect-changes.outputs.python-changed == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          
+      # JavaScript/TypeScript Quality Checks
+      - name: ESLint Analysis
+        if: needs.detect-changes.outputs.node-changed == 'true'
+        run: |
+          npm run lint -- --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif
+        continue-on-error: true
+        
+      - name: TypeScript Type Check
+        if: needs.detect-changes.outputs.node-changed == 'true'
+        run: npm run typecheck
+        
+      - name: Prettier Format Check
+        if: needs.detect-changes.outputs.node-changed == 'true'
+        run: npm run format:check
+        
+      # Python Quality Checks
+      - name: Black Format Check
+        if: needs.detect-changes.outputs.python-changed == 'true'
+        run: black --check --diff src/ tests/
+        
+      - name: isort Import Check
+        if: needs.detect-changes.outputs.python-changed == 'true'
+        run: isort --check-only --diff src/ tests/
+        
+      - name: Flake8 Linting
+        if: needs.detect-changes.outputs.python-changed == 'true'
+        run: flake8 src/ tests/ --format=sarif --output-file=flake8-results.sarif
+        continue-on-error: true
+        
+      - name: MyPy Type Check
+        if: needs.detect-changes.outputs.python-changed == 'true'
+        run: mypy src/ --junit-xml=mypy-results.xml
+        continue-on-error: true
+        
+      # Upload SARIF files for GitHub Security tab
+      - name: Upload ESLint SARIF
+        if: needs.detect-changes.outputs.node-changed == 'true' && always()
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: eslint-results.sarif
+          
+      - name: Upload Flake8 SARIF
+        if: needs.detect-changes.outputs.python-changed == 'true' && always()
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: flake8-results.sarif
+
+  # =============================================================================
+  # Security Scanning
+  # =============================================================================
+  security-scan:
+    name: Security Analysis
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      # CodeQL Analysis
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript, python
+          queries: security-extended,security-and-quality
+          
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+        
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:javascript,python"
+          
+      # Dependency Vulnerability Scanning
+      - name: Run Snyk Security Scan
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --sarif-file-output=snyk-results.sarif
+          
+      - name: Upload Snyk SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: snyk-results.sarif
+          
+      # Python Security Scanning
+      - name: Run Bandit Security Scan
+        if: needs.detect-changes.outputs.python-changed == 'true'
+        run: |
+          pip install bandit
+          bandit -r src/ -f sarif -o bandit-results.sarif
+        continue-on-error: true
+        
+      - name: Upload Bandit SARIF
+        if: needs.detect-changes.outputs.python-changed == 'true' && always()
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: bandit-results.sarif
+          
+      # Secrets Scanning
+      - name: Run TruffleHog OSS
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+
+  # =============================================================================
+  # Unit & Integration Testing
+  # =============================================================================
+  test-node:
+    name: Node.js Tests
+    runs-on: ubuntu-latest
+    needs: [detect-changes, code-quality]
+    if: needs.detect-changes.outputs.node-changed == 'true' && !github.event.inputs.skip_tests
+    
+    strategy:
+      matrix:
+        node-version: [16, 18, 20]
+        
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run unit tests
+        run: npm run test -- --coverage --ci --watchAll=false
+        
+      - name: Run integration tests
+        run: npm run test:integration
+        
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage/lcov.info
+          flags: javascript
+          name: node-${{ matrix.node-version }}
+
+  test-python:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    needs: [detect-changes, code-quality]
+    if: needs.detect-changes.outputs.python-changed == 'true' && !github.event.inputs.skip_tests
+    
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+        
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+        
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          
+      - name: Run unit tests
+        run: |
+          pytest tests/unit/ \
+            --cov=src \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --junitxml=junit-results.xml
+            
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379
+        run: |
+          pytest tests/integration/ \
+            --cov=src \
+            --cov-append \
+            --cov-report=xml \
+            --junitxml=integration-results.xml
+            
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          flags: python
+          name: python-${{ matrix.python-version }}
+
+  # =============================================================================
+  # End-to-End Testing
+  # =============================================================================
+  test-e2e:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    needs: [test-node, test-python]
+    if: >
+      !github.event.inputs.skip_tests &&
+      (needs.test-node.result == 'success' || needs.test-node.result == 'skipped') &&
+      (needs.test-python.result == 'success' || needs.test-python.result == 'skipped')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+        
+      - name: Start application
+        run: |
+          npm run build
+          npm start &
+          npx wait-on http://localhost:8080
+          
+      - name: Run E2E tests
+        run: npm run test:e2e
+        
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-test-results
+          path: test-results/
+
+  # =============================================================================
+  # Performance Testing
+  # =============================================================================
+  performance-test:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: [test-node, test-python]
+    if: >
+      github.event_name == 'push' && github.ref == 'refs/heads/main' ||
+      github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Start application
+        run: |
+          npm run build
+          npm start &
+          npx wait-on http://localhost:8080
+          
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+          
+      - name: Run performance tests
+        run: |
+          k6 run tests/performance/load-test.js \
+            --out json=performance-results.json \
+            --summary-trend-stats="min,med,avg,p(95),p(99),p(99.9),max"
+            
+      - name: Upload performance results
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-results
+          path: performance-results.json
+
+  # =============================================================================
+  # Docker Build & Security Scan
+  # =============================================================================
+  docker-build:
+    name: Build & Scan Docker Images
+    runs-on: ubuntu-latest
+    needs: [detect-changes, security-scan]
+    if: needs.detect-changes.outputs.docker-changed == 'true' || github.ref == 'refs/heads/main'
+    
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-tag: ${{ steps.meta.outputs.tags }}
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+            
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          
+      - name: Upload Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # =============================================================================
+  # Deployment to Staging
+  # =============================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [test-e2e, docker-build, performance-test]
+    if: >
+      github.ref == 'refs/heads/develop' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_environment == 'staging')
+    environment:
+      name: staging
+      url: https://staging.synthetic-guardian.com
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          
+      - name: Deploy to ECS
+        run: |
+          # Update ECS service with new image
+          aws ecs update-service \
+            --cluster staging-cluster \
+            --service synthetic-guardian-staging \
+            --force-new-deployment
+            
+      - name: Wait for deployment
+        run: |
+          aws ecs wait services-stable \
+            --cluster staging-cluster \
+            --services synthetic-guardian-staging
+            
+      - name: Run smoke tests
+        run: |
+          # Basic health check
+          curl -f https://staging.synthetic-guardian.com/health
+          
+          # API functionality test
+          curl -f https://staging.synthetic-guardian.com/api/v1/status
+
+  # =============================================================================
+  # Deployment to Production
+  # =============================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [test-e2e, docker-build, performance-test]
+    if: >
+      github.ref == 'refs/heads/main' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_environment == 'production')
+    environment:
+      name: production
+      url: https://synthetic-guardian.com
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          
+      - name: Deploy to ECS
+        run: |
+          # Update ECS service with new image
+          aws ecs update-service \
+            --cluster production-cluster \
+            --service synthetic-guardian-production \
+            --force-new-deployment
+            
+      - name: Wait for deployment
+        run: |
+          aws ecs wait services-stable \
+            --cluster production-cluster \
+            --services synthetic-guardian-production
+            
+      - name: Run production smoke tests
+        run: |
+          # Basic health check
+          curl -f https://synthetic-guardian.com/health
+          
+          # API functionality test
+          curl -f https://synthetic-guardian.com/api/v1/status
+          
+      - name: Notify deployment success
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#deployments'
+          text: '🚀 Successfully deployed to production!'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          
+      - name: Notify deployment failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#deployments'
+          text: '❌ Production deployment failed!'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # =============================================================================
+  # Post-Deployment Monitoring
+  # =============================================================================
+  post-deployment-check:
+    name: Post-Deployment Monitoring
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success')
+    
+    steps:
+      - name: Wait for system stabilization
+        run: sleep 300 # Wait 5 minutes for system to stabilize
+        
+      - name: Check application metrics
+        run: |
+          # Check if services are responding
+          if [[ "${{ needs.deploy-staging.result }}" == "success" ]]; then
+            curl -f https://staging.synthetic-guardian.com/metrics
+          fi
+          
+          if [[ "${{ needs.deploy-production.result }}" == "success" ]]; then
+            curl -f https://synthetic-guardian.com/metrics
+          fi
+          
+      - name: Verify deployment health
+        run: |
+          # Additional health checks can be added here
+          echo "Deployment health verification complete"
