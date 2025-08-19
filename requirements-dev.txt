@@ -92,7 +92,7 @@ pytest-mock-resources>=2.10.0,<3.0.0
 # Environment Management
 pyenv>=2.3.0,<3.0.0  # System requirement, not pip installable
 virtualenv>=20.24.0,<21.0.0
-virtualenvwrapper>=4.8.4,<5.0.0
+virtualenvwrapper>=4.8.4,<7.0.0
 
 # Containerization Development
 docker>=6.1.0,<8.0.0
