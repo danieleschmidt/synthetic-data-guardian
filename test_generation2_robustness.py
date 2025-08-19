@@ -8,12 +8,10 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from synthetic_guardian import Guardian, GenerationPipeline, PipelineBuilder
-import pytest
 import pandas as pd
 import numpy as np
 import logging
 import tempfile
-from unittest.mock import patch
 import json
 
 
