@@ -1,0 +1,245 @@
+# Multi-stage Dockerfile for production deployment
+# Optimized for security, performance, and minimal attack surface
+
+# ==============================================================================
+# Build Stage - Python Dependencies
+# ==============================================================================
+FROM python:3.11-slim as python-builder
+
+# Security: Run as non-root user
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+
+# Install system dependencies for building
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements files
+COPY requirements.txt requirements-dev.txt ./
+
+# Create virtual environment and install dependencies
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip and install dependencies
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Install additional production dependencies
+RUN pip install --no-cache-dir \
+    gunicorn \
+    uvicorn[standard] \
+    prometheus-client \
+    structlog \
+    sentry-sdk
+
+# ==============================================================================
+# Build Stage - Node.js Dependencies  
+# ==============================================================================
+FROM node:18-alpine as node-builder
+
+# Security: Run as non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy source code and build
+COPY . .
+RUN npm run build
+
+# ==============================================================================
+# Production Stage
+# ==============================================================================
+FROM python:3.11-slim as production
+
+# Security: Install security updates and minimal dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Security: Create non-root user
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy Python virtual environment from builder
+COPY --from=python-builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy Node.js dependencies and built assets
+COPY --from=node-builder /app/node_modules ./node_modules
+COPY --from=node-builder /app/dist ./dist
+
+# Copy application source code
+COPY src/ ./src/
+COPY run_autonomous_sdlc.py ./
+COPY *.py ./
+
+# Copy configuration files
+COPY monitoring/ ./monitoring/
+COPY scripts/ ./scripts/
+
+# Security: Set proper ownership and permissions
+RUN chown -R appuser:appgroup /app && \
+    chmod -R 755 /app && \
+    chmod +x run_autonomous_sdlc.py scripts/*.sh
+
+# Create directories for logs and artifacts
+RUN mkdir -p /app/logs /app/artifacts /app/tmp && \
+    chown -R appuser:appgroup /app/logs /app/artifacts /app/tmp
+
+# Security: Switch to non-root user
+USER appuser
+
+# Expose ports
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Environment variables
+ENV PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    NODE_ENV=production \
+    LOG_LEVEL=INFO \
+    ENABLE_METRICS=true \
+    ENABLE_TRACING=true
+
+# Default command
+CMD ["python", "-m", "src.index"]
+
+# ==============================================================================
+# Development Stage (for local development)
+# ==============================================================================
+FROM production as development
+
+# Switch back to root for development tools installation
+USER root
+
+# Install development dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    vim \
+    htop \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python development dependencies
+RUN pip install --no-cache-dir -r requirements-dev.txt
+
+# Install Node.js development dependencies
+COPY --from=node-builder /app/package*.json ./
+RUN npm install
+
+# Security: Switch back to non-root user
+USER appuser
+
+# Override for development
+ENV NODE_ENV=development \
+    LOG_LEVEL=DEBUG \
+    ENABLE_DEBUG=true
+
+# Development command
+CMD ["python", "run_autonomous_sdlc.py", "--mode", "autonomous", "--verbose"]
+
+# ==============================================================================
+# Testing Stage (for CI/CD)
+# ==============================================================================
+FROM development as testing
+
+# Switch to root for test dependencies
+USER root
+
+# Install testing tools
+RUN apt-get update && apt-get install -y \
+    firefox-esr \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Playwright browsers
+RUN npx playwright install --with-deps
+
+# Install additional testing tools
+RUN pip install --no-cache-dir \
+    pytest-xdist \
+    pytest-benchmark \
+    pytest-timeout \
+    coverage \
+    bandit \
+    safety \
+    pip-audit
+
+# Switch back to non-root user
+USER appuser
+
+# Copy test files
+COPY tests/ ./tests/
+COPY pytest.ini ./
+
+# Testing environment
+ENV NODE_ENV=test \
+    TESTING=true \
+    LOG_LEVEL=DEBUG
+
+# Test command
+CMD ["python", "-m", "pytest", "tests/", "-v", "--cov=src", "--cov-report=html"]
+
+# ==============================================================================
+# Security Scanning Stage
+# ==============================================================================
+FROM alpine:latest as security-scanner
+
+# Install security scanning tools
+RUN apk add --no-cache \
+    curl \
+    git \
+    python3 \
+    py3-pip
+
+# Install security tools
+RUN pip3 install --no-cache-dir \
+    bandit \
+    safety \
+    pip-audit
+
+# Copy source code for scanning
+COPY src/ ./src/
+COPY requirements.txt ./
+
+# Security scanning command
+CMD ["sh", "-c", "bandit -r src/ -f json -o security-report.json && safety check -r requirements.txt"]
+
+# ==============================================================================
+# Metadata and Labels
+# ==============================================================================
+ARG BUILD_DATE
+ARG VERSION
+ARG VCS_REF
+
+LABEL org.label-schema.build-date=$BUILD_DATE \
+      org.label-schema.name="Synthetic Data Guardian" \
+      org.label-schema.description="Enterprise-grade synthetic data pipeline with autonomous SDLC" \
+      org.label-schema.url="https://github.com/terragonlabs/synthetic-data-guardian" \
+      org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.vcs-url="https://github.com/terragonlabs/synthetic-data-guardian" \
+      org.label-schema.vendor="Terragon Labs" \
+      org.label-schema.version=$VERSION \
+      org.label-schema.schema-version="1.0" \
+      maintainer="Terragon Labs <info@terragonlabs.com>"
