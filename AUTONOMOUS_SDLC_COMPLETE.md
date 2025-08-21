@@ -120,12 +120,14 @@
 ## 🔄 CI/CD INTEGRATION
 
 ### 🤖 GitHub Actions Workflow
-**File:** `.github/workflows/autonomous-sdlc.yml`
+**File:** `docs/workflows/autonomous-sdlc-workflow.yml` (manual setup required)
 - Automated SDLC execution on code changes
 - Multi-environment deployment support
 - Quality gate enforcement in CI/CD
 - Comprehensive reporting and notifications
 - Docker image building and security scanning
+
+**📋 Setup Required:** Copy workflow to `.github/workflows/` directory (see `docs/WORKFLOW_SETUP_INSTRUCTIONS.md`)
 
 ### 🐳 Production Deployment
 **Files:** 
@@ -234,7 +236,7 @@ The Autonomous SDLC system is **production-ready** with:
 ### 📖 Implementation Guides
 - **Main Script:** `run_autonomous_sdlc.py --help`
 - **Configuration:** See orchestrator config options
-- **CI/CD Setup:** `.github/workflows/autonomous-sdlc.yml`
+- **CI/CD Setup:** `docs/WORKFLOW_SETUP_INSTRUCTIONS.md`
 - **Deployment:** `docker-compose.autonomous.yml`
 
 ### 🔧 Monitoring & Operations
