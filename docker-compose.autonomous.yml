@@ -1,0 +1,256 @@
+version: '3.8'
+
+services:
+  # Autonomous SDLC Orchestrator
+  sdlc-orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: synthetic-data-guardian:latest
+    container_name: sdlc-orchestrator
+    environment:
+      - NODE_ENV=production
+      - PYTHON_ENV=production
+      - ENABLE_AUTONOMOUS_SDLC=true
+      - QUALITY_THRESHOLD=85
+      - SECURITY_THRESHOLD=90
+      - PERFORMANCE_THRESHOLD=80
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./src:/app/src:ro
+      - ./logs:/app/logs
+      - ./artifacts:/app/artifacts
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - sdlc-network
+    depends_on:
+      - postgres
+      - redis
+      - prometheus
+      - grafana
+
+  # Database for SDLC data persistence
+  postgres:
+    image: postgres:15-alpine
+    container_name: sdlc-postgres
+    environment:
+      - POSTGRES_DB=sdlc_data
+      - POSTGRES_USER=sdlc_user
+      - POSTGRES_PASSWORD=sdlc_secure_password
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sdlc_user -d sdlc_data"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - sdlc-network
+
+  # Redis for caching and session management
+  redis:
+    image: redis:7-alpine
+    container_name: sdlc-redis
+    command: redis-server --requirepass sdlc_redis_password --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - sdlc-network
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: sdlc-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - sdlc-network
+
+  # Grafana for dashboards and visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sdlc-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=sdlc_admin_password
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/sdlc-overview.json
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - sdlc-network
+    depends_on:
+      - prometheus
+
+  # Alertmanager for alert routing
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: sdlc-alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - ./monitoring/alertmanager/config.yml:/etc/alertmanager/config.yml:ro
+      - alertmanager_data:/alertmanager
+    ports:
+      - "9093:9093"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - sdlc-network
+
+  # Jaeger for distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: sdlc-jaeger
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "14268:14268"  # Jaeger collector
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:16686/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - sdlc-network
+
+  # MinIO for artifact storage
+  minio:
+    image: minio/minio:latest
+    container_name: sdlc-minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=sdlc_minio_user
+      - MINIO_ROOT_PASSWORD=sdlc_minio_password
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - sdlc-network
+
+  # Nginx reverse proxy and load balancer
+  nginx:
+    image: nginx:alpine
+    container_name: sdlc-nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/nginx-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - sdlc-network
+    depends_on:
+      - sdlc-orchestrator
+
+  # SDLC Scheduler for automated executions
+  sdlc-scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile.scheduler
+    image: sdlc-scheduler:latest
+    container_name: sdlc-scheduler
+    environment:
+      - SCHEDULE_INTERVAL=3600  # Run every hour
+      - QUALITY_THRESHOLD=85
+      - ENABLE_AUTO_DEPLOYMENT=false
+      - ORCHESTRATOR_URL=http://sdlc-orchestrator:8080
+    volumes:
+      - ./schedules:/app/schedules:ro
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - sdlc-network
+    depends_on:
+      - sdlc-orchestrator
+
+networks:
+  sdlc-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  alertmanager_data:
+    driver: local
+  minio_data:
+    driver: local
