@@ -24,6 +24,20 @@ from ..validators.base import BaseValidator
 from ..generators.base import BaseGenerator
 from ..watermarks.base import BaseWatermarker
 
+# Research module imports
+try:
+    from ..research import (
+        AdaptiveDifferentialPrivacy,
+        MultiModalQuantumWatermarker,
+        PrivacyAwareTemporalStyleTransfer,
+        ZeroKnowledgeLineageSystem,
+        AdversarialRobustnessEvaluator,
+        get_research_info
+    )
+    RESEARCH_AVAILABLE = True
+except ImportError:
+    RESEARCH_AVAILABLE = False
+
 
 class RateLimiter:
     """Rate limiter for API requests."""
@@ -118,6 +132,14 @@ class GuardianConfig:
     max_field_name_length: int = 100
     max_string_field_length: int = 10000
     enable_audit_logging: bool = True
+    
+    # Research module settings
+    enable_research_mode: bool = False
+    adaptive_privacy_enabled: bool = False
+    quantum_watermarking_enabled: bool = False
+    neural_temporal_preservation_enabled: bool = False
+    zk_lineage_enabled: bool = False
+    adversarial_testing_enabled: bool = False
 
 
 class Guardian:
@@ -153,6 +175,14 @@ class Guardian:
         self.watermarkers: Dict[str, BaseWatermarker] = {}
         self.initialized = False
         
+        # Research modules state
+        self.research_modules: Dict[str, Any] = {}
+        self.adaptive_privacy = None
+        self.quantum_watermarker = None
+        self.temporal_style_transfer = None
+        self.zk_lineage_system = None
+        self.adversarial_evaluator = None
+        
         # Security and robustness state
         self.rate_limiter = RateLimiter(self.config.rate_limit_requests_per_minute)
         self.resource_monitor = ResourceMonitor(self.config.max_memory_usage_mb) if self.config.enable_resource_monitoring else None
@@ -184,6 +214,10 @@ class Guardian:
             await self._initialize_generators()
             await self._initialize_validators()
             await self._initialize_watermarkers()
+            
+            # Initialize research modules if enabled
+            if self.config.enable_research_mode and RESEARCH_AVAILABLE:
+                await self._initialize_research_modules()
             
             # Setup temporary directory
             if self.config.temp_dir is None:
@@ -269,6 +303,65 @@ class Guardian:
                 self.logger.debug(f"Initialized {name} watermarker")
             except Exception as e:
                 self.logger.warning(f"Failed to initialize {name} watermarker: {str(e)}")
+    
+    async def _initialize_research_modules(self) -> None:
+        """Initialize advanced research modules."""
+        self.logger.info("Initializing advanced research modules...")
+        
+        try:
+            # Initialize Adaptive Differential Privacy
+            if self.config.adaptive_privacy_enabled:
+                from ..research import AdaptiveDifferentialPrivacy, PrivacyBudget
+                privacy_budget = PrivacyBudget(epsilon=1.0, delta=1e-5)
+                self.adaptive_privacy = AdaptiveDifferentialPrivacy(
+                    initial_budget=privacy_budget,
+                    utility_target=0.8
+                )
+                self.research_modules['adaptive_privacy'] = self.adaptive_privacy
+                self.logger.info("✅ Initialized Adaptive Differential Privacy")
+            
+            # Initialize Quantum-Resistant Watermarking
+            if self.config.quantum_watermarking_enabled:
+                from ..research import MultiModalQuantumWatermarker, CryptographicAlgorithm
+                self.quantum_watermarker = MultiModalQuantumWatermarker(
+                    algorithm=CryptographicAlgorithm.LATTICE_BASED
+                )
+                self.research_modules['quantum_watermarking'] = self.quantum_watermarker
+                self.logger.info("✅ Initialized Quantum-Resistant Watermarking")
+            
+            # Initialize Neural Temporal Style Transfer
+            if self.config.neural_temporal_preservation_enabled:
+                from ..research import PrivacyAwareTemporalStyleTransfer, StyleTransferConfig
+                config = StyleTransferConfig(
+                    sequence_length=100,
+                    hidden_dims=128,
+                    privacy_epsilon=1.0
+                )
+                self.temporal_style_transfer = PrivacyAwareTemporalStyleTransfer(config)
+                self.research_modules['neural_temporal'] = self.temporal_style_transfer
+                self.logger.info("✅ Initialized Neural Temporal Preservation")
+            
+            # Initialize Zero-Knowledge Lineage System
+            if self.config.zk_lineage_enabled:
+                from ..research import ZeroKnowledgeLineageSystem
+                self.zk_lineage_system = ZeroKnowledgeLineageSystem()
+                self.research_modules['zk_lineage'] = self.zk_lineage_system
+                self.logger.info("✅ Initialized Zero-Knowledge Lineage System")
+            
+            # Initialize Adversarial Robustness Evaluator
+            if self.config.adversarial_testing_enabled:
+                from ..research import AdversarialRobustnessEvaluator
+                self.adversarial_evaluator = AdversarialRobustnessEvaluator()
+                self.research_modules['adversarial_testing'] = self.adversarial_evaluator
+                self.logger.info("✅ Initialized Adversarial Robustness Testing")
+            
+            research_info = get_research_info()
+            self.logger.info(f"🔬 Research mode enabled: {len(self.research_modules)} modules loaded")
+            self.logger.info(f"📚 Academic contributions: {len(research_info['academic_contributions'])}")
+            
+        except Exception as e:
+            self.logger.error(f"Failed to initialize research modules: {str(e)}")
+            # Continue without research modules - they're optional
     
     async def generate(
         self,

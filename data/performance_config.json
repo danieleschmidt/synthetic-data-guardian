@@ -1,0 +1,6 @@
+{
+  "cache_enabled": true,
+  "worker_pools": 4,
+  "max_memory_mb": 1024,
+  "performance_tracking": true
+}
