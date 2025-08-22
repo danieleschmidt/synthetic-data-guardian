@@ -16,7 +16,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 import psutil
 
-from ..utils.logger import get_logger
+from ..synthetic_guardian.utils.logger import Logger
 
 
 class SDLCPhase(Enum):
