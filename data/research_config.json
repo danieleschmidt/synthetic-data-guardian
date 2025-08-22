@@ -1,0 +1,11 @@
+{
+  "enabled_modules": [],
+  "degraded_modules": [
+    "adaptive_privacy (system monitoring disabled)",
+    "quantum_watermarking (system monitoring disabled)",
+    "neural_temporal_preservation (system monitoring disabled)",
+    "zero_knowledge_lineage (system monitoring disabled)",
+    "adversarial_robustness (system monitoring disabled)"
+  ],
+  "fallback_mode": true
+}

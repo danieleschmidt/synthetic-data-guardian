@@ -1,0 +1,7 @@
+{
+  "logging_level": "INFO",
+  "metrics_enabled": true,
+  "alerting_enabled": true,
+  "health_check_interval": 30,
+  "fallback_monitoring": true
+}
