@@ -425,8 +425,11 @@ class TabularGenerator(BaseGenerator):
             max_val = spec.get('max', 1.0)
             return np.random.uniform(min_val, max_val, num_records).tolist()
         elif column_type == 'categorical':
-            categories = spec.get('categories', ['A', 'B', 'C'])
+            # Support both 'categories' and 'values' keys
+            categories = spec.get('categories', spec.get('values', ['A', 'B', 'C']))
             return np.random.choice(categories, num_records).tolist()
+        elif column_type == 'boolean':
+            return np.random.choice([True, False], num_records).tolist()
         else:
             return [f"generated_{i}" for i in range(num_records)]
     

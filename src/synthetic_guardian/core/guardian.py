@@ -24,17 +24,20 @@ from ..validators.base import BaseValidator
 from ..generators.base import BaseGenerator
 from ..watermarks.base import BaseWatermarker
 
-# Research module imports
+# Research module imports - temporarily disabled for basic functionality
+RESEARCH_AVAILABLE = False
 try:
-    from ..research import (
-        AdaptiveDifferentialPrivacy,
-        MultiModalQuantumWatermarker,
-        PrivacyAwareTemporalStyleTransfer,
-        ZeroKnowledgeLineageSystem,
-        AdversarialRobustnessEvaluator,
-        get_research_info
-    )
-    RESEARCH_AVAILABLE = True
+    # Disabled due to syntax errors in research modules
+    # from ..research import (
+    #     AdaptiveDifferentialPrivacy,
+    #     MultiModalQuantumWatermarker,
+    #     PrivacyAwareTemporalStyleTransfer,
+    #     ZeroKnowledgeLineageSystem,
+    #     AdversarialRobustnessEvaluator,
+    #     get_research_info
+    # )
+    # RESEARCH_AVAILABLE = True
+    pass
 except ImportError:
     RESEARCH_AVAILABLE = False
 
