@@ -1,0 +1,82 @@
+# Terragon SDLC - Kubernetes Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: terragon-sdlc
+  namespace: default
+  labels:
+    app: terragon-sdlc
+    version: v1.0.0
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: terragon-sdlc
+  template:
+    metadata:
+      labels:
+        app: terragon-sdlc
+        version: v1.0.0
+    spec:
+      containers:
+        - name: terragon-sdlc
+          image: terragon-sdlc:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: '512Mi'
+              cpu: '250m'
+            limits:
+              memory: '1Gi'
+              cpu: '500m'
+          livenessProbe:
+            exec:
+              command:
+                - python3
+                - -c
+                - "from generation1_simple_demo import SimpleGuardian; g = SimpleGuardian(); print('healthy')"
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command:
+                - python3
+                - -c
+                - "from generation1_simple_demo import SimpleGuardian; g = SimpleGuardian(); print('ready')"
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: terragon-sdlc-service
+  labels:
+    app: terragon-sdlc
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: terragon-sdlc
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: terragon-sdlc-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: terragon-sdlc
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

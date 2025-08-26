@@ -1,0 +1,1079 @@
+{
+  "generation_id": "ac2e0f17-f226-4d5b-a17e-2399a7a99e8f",
+  "success": true,
+  "data": {
+    "records": [
+      {
+        "customer_id": 1,
+        "age": 47,
+        "annual_income": 122696.54,
+        "department": "Sales",
+        "years_experience": 4
+      },
+      {
+        "customer_id": 2,
+        "age": 73,
+        "annual_income": 62819.81,
+        "department": "Finance",
+        "years_experience": 22
+      },
+      {
+        "customer_id": 3,
+        "age": 62,
+        "annual_income": 139955.61,
+        "department": "Finance",
+        "years_experience": 24
+      },
+      {
+        "customer_id": 4,
+        "age": 54,
+        "annual_income": 96824.05,
+        "department": "Operations",
+        "years_experience": 8
+      },
+      {
+        "customer_id": 5,
+        "age": 75,
+        "annual_income": 25302.79,
+        "department": "Operations",
+        "years_experience": 25
+      },
+      {
+        "customer_id": 6,
+        "age": 59,
+        "annual_income": 202439.2,
+        "department": "Engineering",
+        "years_experience": 37
+      },
+      {
+        "customer_id": 7,
+        "age": 74,
+        "annual_income": 200967.34,
+        "department": "Marketing",
+        "years_experience": 20
+      },
+      {
+        "customer_id": 8,
+        "age": 18,
+        "annual_income": 157937.96,
+        "department": "HR",
+        "years_experience": 21
+      },
+      {
+        "customer_id": 9,
+        "age": 46,
+        "annual_income": 71685.04,
+        "department": "Operations",
+        "years_experience": 32
+      },
+      {
+        "customer_id": 10,
+        "age": 67,
+        "annual_income": 36729.19,
+        "department": "Sales",
+        "years_experience": 26
+      },
+      {
+        "customer_id": 11,
+        "age": 73,
+        "annual_income": 33355.94,
+        "department": "Finance",
+        "years_experience": 22
+      },
+      {
+        "customer_id": 12,
+        "age": 51,
+        "annual_income": 137207.72,
+        "department": "HR",
+        "years_experience": 16
+      },
+      {
+        "customer_id": 13,
+        "age": 52,
+        "annual_income": 221323.17,
+        "department": "HR",
+        "years_experience": 3
+      },
+      {
+        "customer_id": 14,
+        "age": 31,
+        "annual_income": 150310.85,
+        "department": "Engineering",
+        "years_experience": 31
+      },
+      {
+        "customer_id": 15,
+        "age": 47,
+        "annual_income": 156631.93,
+        "department": "Engineering",
+        "years_experience": 5
+      },
+      {
+        "customer_id": 16,
+        "age": 44,
+        "annual_income": 198965.85,
+        "department": "Engineering",
+        "years_experience": 32
+      },
+      {
+        "customer_id": 17,
+        "age": 62,
+        "annual_income": 54489.29,
+        "department": "Sales",
+        "years_experience": 13
+      },
+      {
+        "customer_id": 18,
+        "age": 59,
+        "annual_income": 142340.1,
+        "department": "Marketing",
+        "years_experience": 6
+      },
+      {
+        "customer_id": 19,
+        "age": 49,
+        "annual_income": 213377.96,
+        "department": "Engineering",
+        "years_experience": 1
+      },
+      {
+        "customer_id": 20,
+        "age": 45,
+        "annual_income": 27239.15,
+        "department": "Finance",
+        "years_experience": 23
+      },
+      {
+        "customer_id": 21,
+        "age": 61,
+        "annual_income": 83284.4,
+        "department": "Engineering",
+        "years_experience": 43
+      },
+      {
+        "customer_id": 22,
+        "age": 63,
+        "annual_income": 48911.27,
+        "department": "Operations",
+        "years_experience": 5
+      },
+      {
+        "customer_id": 23,
+        "age": 50,
+        "annual_income": 33632.85,
+        "department": "Sales",
+        "years_experience": 17
+      },
+      {
+        "customer_id": 24,
+        "age": 72,
+        "annual_income": 117106.99,
+        "department": "Sales",
+        "years_experience": 28
+      },
+      {
+        "customer_id": 25,
+        "age": 70,
+        "annual_income": 248158.1,
+        "department": "HR",
+        "years_experience": 42
+      },
+      {
+        "customer_id": 26,
+        "age": 52,
+        "annual_income": 38391.45,
+        "department": "Engineering",
+        "years_experience": 27
+      },
+      {
+        "customer_id": 27,
+        "age": 34,
+        "annual_income": 64226.87,
+        "department": "HR",
+        "years_experience": 20
+      },
+      {
+        "customer_id": 28,
+        "age": 29,
+        "annual_income": 44585.2,
+        "department": "HR",
+        "years_experience": 30
+      },
+      {
+        "customer_id": 29,
+        "age": 75,
+        "annual_income": 227834.75,
+        "department": "Sales",
+        "years_experience": 25
+      },
+      {
+        "customer_id": 30,
+        "age": 71,
+        "annual_income": 208210.05,
+        "department": "Engineering",
+        "years_experience": 13
+      },
+      {
+        "customer_id": 31,
+        "age": 25,
+        "annual_income": 134533.88,
+        "department": "Operations",
+        "years_experience": 16
+      },
+      {
+        "customer_id": 32,
+        "age": 24,
+        "annual_income": 28377.9,
+        "department": "HR",
+        "years_experience": 42
+      },
+      {
+        "customer_id": 33,
+        "age": 59,
+        "annual_income": 157099.09,
+        "department": "Marketing",
+        "years_experience": 3
+      },
+      {
+        "customer_id": 34,
+        "age": 44,
+        "annual_income": 48088.42,
+        "department": "HR",
+        "years_experience": 26
+      },
+      {
+        "customer_id": 35,
+        "age": 45,
+        "annual_income": 232853.1,
+        "department": "Sales",
+        "years_experience": 23
+      },
+      {
+        "customer_id": 36,
+        "age": 66,
+        "annual_income": 68289.97,
+        "department": "Sales",
+        "years_experience": 7
+      },
+      {
+        "customer_id": 37,
+        "age": 53,
+        "annual_income": 207004.79,
+        "department": "HR",
+        "years_experience": 10
+      },
+      {
+        "customer_id": 38,
+        "age": 30,
+        "annual_income": 167421.81,
+        "department": "HR",
+        "years_experience": 14
+      },
+      {
+        "customer_id": 39,
+        "age": 61,
+        "annual_income": 100304.28,
+        "department": "Sales",
+        "years_experience": 12
+      },
+      {
+        "customer_id": 40,
+        "age": 75,
+        "annual_income": 164956.52,
+        "department": "Marketing",
+        "years_experience": 36
+      },
+      {
+        "customer_id": 41,
+        "age": 41,
+        "annual_income": 134482.55,
+        "department": "Operations",
+        "years_experience": 38
+      },
+      {
+        "customer_id": 42,
+        "age": 53,
+        "annual_income": 166788.29,
+        "department": "Finance",
+        "years_experience": 29
+      },
+      {
+        "customer_id": 43,
+        "age": 66,
+        "annual_income": 53742.86,
+        "department": "Sales",
+        "years_experience": 9
+      },
+      {
+        "customer_id": 44,
+        "age": 71,
+        "annual_income": 233164.59,
+        "department": "HR",
+        "years_experience": 12
+      },
+      {
+        "customer_id": 45,
+        "age": 23,
+        "annual_income": 130730.41,
+        "department": "Marketing",
+        "years_experience": 39
+      },
+      {
+        "customer_id": 46,
+        "age": 46,
+        "annual_income": 77233.13,
+        "department": "Finance",
+        "years_experience": 35
+      },
+      {
+        "customer_id": 47,
+        "age": 42,
+        "annual_income": 93708.76,
+        "department": "Operations",
+        "years_experience": 44
+      },
+      {
+        "customer_id": 48,
+        "age": 62,
+        "annual_income": 33150.89,
+        "department": "Marketing",
+        "years_experience": 30
+      },
+      {
+        "customer_id": 49,
+        "age": 68,
+        "annual_income": 119359.48,
+        "department": "Engineering",
+        "years_experience": 44
+      },
+      {
+        "customer_id": 50,
+        "age": 36,
+        "annual_income": 71897.53,
+        "department": "HR",
+        "years_experience": 13
+      },
+      {
+        "customer_id": 51,
+        "age": 46,
+        "annual_income": 152090.67,
+        "department": "Operations",
+        "years_experience": 6
+      },
+      {
+        "customer_id": 52,
+        "age": 22,
+        "annual_income": 220188.35,
+        "department": "Finance",
+        "years_experience": 26
+      },
+      {
+        "customer_id": 53,
+        "age": 39,
+        "annual_income": 248787.66,
+        "department": "Engineering",
+        "years_experience": 25
+      },
+      {
+        "customer_id": 54,
+        "age": 27,
+        "annual_income": 139284.08,
+        "department": "Operations",
+        "years_experience": 25
+      },
+      {
+        "customer_id": 55,
+        "age": 47,
+        "annual_income": 211480.79,
+        "department": "HR",
+        "years_experience": 45
+      },
+      {
+        "customer_id": 56,
+        "age": 23,
+        "annual_income": 100838.16,
+        "department": "Sales",
+        "years_experience": 12
+      },
+      {
+        "customer_id": 57,
+        "age": 31,
+        "annual_income": 182207.2,
+        "department": "HR",
+        "years_experience": 18
+      },
+      {
+        "customer_id": 58,
+        "age": 61,
+        "annual_income": 86216.21,
+        "department": "Engineering",
+        "years_experience": 40
+      },
+      {
+        "customer_id": 59,
+        "age": 74,
+        "annual_income": 79885.47,
+        "department": "Finance",
+        "years_experience": 29
+      },
+      {
+        "customer_id": 60,
+        "age": 44,
+        "annual_income": 224313.46,
+        "department": "Marketing",
+        "years_experience": 19
+      },
+      {
+        "customer_id": 61,
+        "age": 24,
+        "annual_income": 59863.05,
+        "department": "HR",
+        "years_experience": 26
+      },
+      {
+        "customer_id": 62,
+        "age": 22,
+        "annual_income": 168957.18,
+        "department": "Engineering",
+        "years_experience": 20
+      },
+      {
+        "customer_id": 63,
+        "age": 63,
+        "annual_income": 212654.49,
+        "department": "HR",
+        "years_experience": 3
+      },
+      {
+        "customer_id": 64,
+        "age": 25,
+        "annual_income": 41344.79,
+        "department": "Sales",
+        "years_experience": 41
+      },
+      {
+        "customer_id": 65,
+        "age": 68,
+        "annual_income": 42942.6,
+        "department": "HR",
+        "years_experience": 36
+      },
+      {
+        "customer_id": 66,
+        "age": 37,
+        "annual_income": 194482.21,
+        "department": "Sales",
+        "years_experience": 34
+      },
+      {
+        "customer_id": 67,
+        "age": 26,
+        "annual_income": 122628.54,
+        "department": "Marketing",
+        "years_experience": 11
+      },
+      {
+        "customer_id": 68,
+        "age": 67,
+        "annual_income": 130599.63,
+        "department": "Sales",
+        "years_experience": 19
+      },
+      {
+        "customer_id": 69,
+        "age": 55,
+        "annual_income": 139727.35,
+        "department": "Finance",
+        "years_experience": 29
+      },
+      {
+        "customer_id": 70,
+        "age": 48,
+        "annual_income": 128808.19,
+        "department": "HR",
+        "years_experience": 12
+      },
+      {
+        "customer_id": 71,
+        "age": 74,
+        "annual_income": 113048.48,
+        "department": "HR",
+        "years_experience": 40
+      },
+      {
+        "customer_id": 72,
+        "age": 57,
+        "annual_income": 145509.07,
+        "department": "Sales",
+        "years_experience": 31
+      },
+      {
+        "customer_id": 73,
+        "age": 35,
+        "annual_income": 59064.56,
+        "department": "HR",
+        "years_experience": 34
+      },
+      {
+        "customer_id": 74,
+        "age": 70,
+        "annual_income": 172714.49,
+        "department": "Engineering",
+        "years_experience": 2
+      },
+      {
+        "customer_id": 75,
+        "age": 69,
+        "annual_income": 226434.14,
+        "department": "Finance",
+        "years_experience": 44
+      },
+      {
+        "customer_id": 76,
+        "age": 65,
+        "annual_income": 113021.43,
+        "department": "Finance",
+        "years_experience": 27
+      },
+      {
+        "customer_id": 77,
+        "age": 52,
+        "annual_income": 118495.95,
+        "department": "Finance",
+        "years_experience": 17
+      },
+      {
+        "customer_id": 78,
+        "age": 24,
+        "annual_income": 227382.07,
+        "department": "Engineering",
+        "years_experience": 34
+      },
+      {
+        "customer_id": 79,
+        "age": 39,
+        "annual_income": 134856.54,
+        "department": "Engineering",
+        "years_experience": 18
+      },
+      {
+        "customer_id": 80,
+        "age": 35,
+        "annual_income": 72104.73,
+        "department": "Sales",
+        "years_experience": 11
+      },
+      {
+        "customer_id": 81,
+        "age": 39,
+        "annual_income": 155724.51,
+        "department": "Operations",
+        "years_experience": 41
+      },
+      {
+        "customer_id": 82,
+        "age": 26,
+        "annual_income": 213805.81,
+        "department": "HR",
+        "years_experience": 34
+      },
+      {
+        "customer_id": 83,
+        "age": 42,
+        "annual_income": 184054.47,
+        "department": "HR",
+        "years_experience": 18
+      },
+      {
+        "customer_id": 84,
+        "age": 54,
+        "annual_income": 74673.59,
+        "department": "HR",
+        "years_experience": 38
+      },
+      {
+        "customer_id": 85,
+        "age": 37,
+        "annual_income": 169501.28,
+        "department": "HR",
+        "years_experience": 9
+      },
+      {
+        "customer_id": 86,
+        "age": 52,
+        "annual_income": 241230.43,
+        "department": "Engineering",
+        "years_experience": 7
+      },
+      {
+        "customer_id": 87,
+        "age": 30,
+        "annual_income": 184023.22,
+        "department": "Sales",
+        "years_experience": 0
+      },
+      {
+        "customer_id": 88,
+        "age": 29,
+        "annual_income": 181016.49,
+        "department": "Operations",
+        "years_experience": 15
+      },
+      {
+        "customer_id": 89,
+        "age": 58,
+        "annual_income": 235310.29,
+        "department": "Engineering",
+        "years_experience": 7
+      },
+      {
+        "customer_id": 90,
+        "age": 70,
+        "annual_income": 80177.2,
+        "department": "Sales",
+        "years_experience": 22
+      },
+      {
+        "customer_id": 91,
+        "age": 43,
+        "annual_income": 221855.05,
+        "department": "Engineering",
+        "years_experience": 34
+      },
+      {
+        "customer_id": 92,
+        "age": 62,
+        "annual_income": 91549.35,
+        "department": "Finance",
+        "years_experience": 31
+      },
+      {
+        "customer_id": 93,
+        "age": 53,
+        "annual_income": 148729.68,
+        "department": "Operations",
+        "years_experience": 8
+      },
+      {
+        "customer_id": 94,
+        "age": 30,
+        "annual_income": 157645.24,
+        "department": "HR",
+        "years_experience": 30
+      },
+      {
+        "customer_id": 95,
+        "age": 64,
+        "annual_income": 130075.88,
+        "department": "Engineering",
+        "years_experience": 18
+      },
+      {
+        "customer_id": 96,
+        "age": 69,
+        "annual_income": 89860.86,
+        "department": "Finance",
+        "years_experience": 12
+      },
+      {
+        "customer_id": 97,
+        "age": 42,
+        "annual_income": 123661.74,
+        "department": "Finance",
+        "years_experience": 28
+      },
+      {
+        "customer_id": 98,
+        "age": 48,
+        "annual_income": 115934.19,
+        "department": "Operations",
+        "years_experience": 4
+      },
+      {
+        "customer_id": 99,
+        "age": 65,
+        "annual_income": 233730.29,
+        "department": "Sales",
+        "years_experience": 12
+      },
+      {
+        "customer_id": 100,
+        "age": 38,
+        "annual_income": 140978.94,
+        "department": "Operations",
+        "years_experience": 38
+      },
+      {
+        "customer_id": 101,
+        "age": 69,
+        "annual_income": 31835.09,
+        "department": "Sales",
+        "years_experience": 11
+      },
+      {
+        "customer_id": 102,
+        "age": 71,
+        "annual_income": 72564.97,
+        "department": "HR",
+        "years_experience": 12
+      },
+      {
+        "customer_id": 103,
+        "age": 28,
+        "annual_income": 33171.18,
+        "department": "Marketing",
+        "years_experience": 23
+      },
+      {
+        "customer_id": 104,
+        "age": 49,
+        "annual_income": 172440.08,
+        "department": "Finance",
+        "years_experience": 27
+      },
+      {
+        "customer_id": 105,
+        "age": 35,
+        "annual_income": 108614.98,
+        "department": "Engineering",
+        "years_experience": 35
+      },
+      {
+        "customer_id": 106,
+        "age": 19,
+        "annual_income": 27589.03,
+        "department": "Sales",
+        "years_experience": 2
+      },
+      {
+        "customer_id": 107,
+        "age": 64,
+        "annual_income": 122450.18,
+        "department": "HR",
+        "years_experience": 13
+      },
+      {
+        "customer_id": 108,
+        "age": 66,
+        "annual_income": 248248.68,
+        "department": "Engineering",
+        "years_experience": 44
+      },
+      {
+        "customer_id": 109,
+        "age": 71,
+        "annual_income": 144769.67,
+        "department": "Engineering",
+        "years_experience": 9
+      },
+      {
+        "customer_id": 110,
+        "age": 40,
+        "annual_income": 165803.09,
+        "department": "Finance",
+        "years_experience": 23
+      },
+      {
+        "customer_id": 111,
+        "age": 40,
+        "annual_income": 176631.32,
+        "department": "Sales",
+        "years_experience": 7
+      },
+      {
+        "customer_id": 112,
+        "age": 65,
+        "annual_income": 43248.63,
+        "department": "Engineering",
+        "years_experience": 23
+      },
+      {
+        "customer_id": 113,
+        "age": 49,
+        "annual_income": 121127.68,
+        "department": "Engineering",
+        "years_experience": 20
+      },
+      {
+        "customer_id": 114,
+        "age": 56,
+        "annual_income": 186852.59,
+        "department": "Sales",
+        "years_experience": 41
+      },
+      {
+        "customer_id": 115,
+        "age": 29,
+        "annual_income": 78107.52,
+        "department": "Sales",
+        "years_experience": 32
+      },
+      {
+        "customer_id": 116,
+        "age": 61,
+        "annual_income": 214614.03,
+        "department": "HR",
+        "years_experience": 14
+      },
+      {
+        "customer_id": 117,
+        "age": 66,
+        "annual_income": 216067.12,
+        "department": "Operations",
+        "years_experience": 17
+      },
+      {
+        "customer_id": 118,
+        "age": 51,
+        "annual_income": 186359.98,
+        "department": "Finance",
+        "years_experience": 1
+      },
+      {
+        "customer_id": 119,
+        "age": 28,
+        "annual_income": 70427.18,
+        "department": "HR",
+        "years_experience": 6
+      },
+      {
+        "customer_id": 120,
+        "age": 32,
+        "annual_income": 146010.57,
+        "department": "Marketing",
+        "years_experience": 10
+      },
+      {
+        "customer_id": 121,
+        "age": 73,
+        "annual_income": 101449.42,
+        "department": "Sales",
+        "years_experience": 4
+      },
+      {
+        "customer_id": 122,
+        "age": 41,
+        "annual_income": 41639.06,
+        "department": "HR",
+        "years_experience": 21
+      },
+      {
+        "customer_id": 123,
+        "age": 47,
+        "annual_income": 83498.6,
+        "department": "HR",
+        "years_experience": 11
+      },
+      {
+        "customer_id": 124,
+        "age": 42,
+        "annual_income": 71683.34,
+        "department": "Engineering",
+        "years_experience": 2
+      },
+      {
+        "customer_id": 125,
+        "age": 25,
+        "annual_income": 213393.09,
+        "department": "Marketing",
+        "years_experience": 17
+      },
+      {
+        "customer_id": 126,
+        "age": 44,
+        "annual_income": 222553.08,
+        "department": "Operations",
+        "years_experience": 10
+      },
+      {
+        "customer_id": 127,
+        "age": 44,
+        "annual_income": 162309.47,
+        "department": "Finance",
+        "years_experience": 38
+      },
+      {
+        "customer_id": 128,
+        "age": 25,
+        "annual_income": 29102.09,
+        "department": "HR",
+        "years_experience": 22
+      },
+      {
+        "customer_id": 129,
+        "age": 39,
+        "annual_income": 141991.76,
+        "department": "Operations",
+        "years_experience": 7
+      },
+      {
+        "customer_id": 130,
+        "age": 69,
+        "annual_income": 243364.14,
+        "department": "HR",
+        "years_experience": 38
+      },
+      {
+        "customer_id": 131,
+        "age": 23,
+        "annual_income": 133200.77,
+        "department": "Operations",
+        "years_experience": 11
+      },
+      {
+        "customer_id": 132,
+        "age": 52,
+        "annual_income": 217674.03,
+        "department": "Finance",
+        "years_experience": 23
+      },
+      {
+        "customer_id": 133,
+        "age": 36,
+        "annual_income": 105453.37,
+        "department": "HR",
+        "years_experience": 20
+      },
+      {
+        "customer_id": 134,
+        "age": 57,
+        "annual_income": 66038.03,
+        "department": "Engineering",
+        "years_experience": 31
+      },
+      {
+        "customer_id": 135,
+        "age": 36,
+        "annual_income": 195969.28,
+        "department": "Engineering",
+        "years_experience": 33
+      },
+      {
+        "customer_id": 136,
+        "age": 64,
+        "annual_income": 186551.74,
+        "department": "Marketing",
+        "years_experience": 22
+      },
+      {
+        "customer_id": 137,
+        "age": 41,
+        "annual_income": 235174.67,
+        "department": "Engineering",
+        "years_experience": 9
+      },
+      {
+        "customer_id": 138,
+        "age": 44,
+        "annual_income": 234154.69,
+        "department": "Operations",
+        "years_experience": 14
+      },
+      {
+        "customer_id": 139,
+        "age": 28,
+        "annual_income": 207347.84,
+        "department": "Operations",
+        "years_experience": 18
+      },
+      {
+        "customer_id": 140,
+        "age": 65,
+        "annual_income": 163209.0,
+        "department": "Finance",
+        "years_experience": 41
+      },
+      {
+        "customer_id": 141,
+        "age": 57,
+        "annual_income": 119663.79,
+        "department": "Marketing",
+        "years_experience": 12
+      },
+      {
+        "customer_id": 142,
+        "age": 62,
+        "annual_income": 234435.79,
+        "department": "Engineering",
+        "years_experience": 35
+      },
+      {
+        "customer_id": 143,
+        "age": 59,
+        "annual_income": 88843.09,
+        "department": "Finance",
+        "years_experience": 24
+      },
+      {
+        "customer_id": 144,
+        "age": 68,
+        "annual_income": 82191.29,
+        "department": "Operations",
+        "years_experience": 11
+      },
+      {
+        "customer_id": 145,
+        "age": 29,
+        "annual_income": 130889.82,
+        "department": "Marketing",
+        "years_experience": 16
+      },
+      {
+        "customer_id": 146,
+        "age": 20,
+        "annual_income": 49544.78,
+        "department": "Marketing",
+        "years_experience": 40
+      },
+      {
+        "customer_id": 147,
+        "age": 42,
+        "annual_income": 37027.86,
+        "department": "HR",
+        "years_experience": 22
+      },
+      {
+        "customer_id": 148,
+        "age": 30,
+        "annual_income": 187516.47,
+        "department": "Marketing",
+        "years_experience": 20
+      },
+      {
+        "customer_id": 149,
+        "age": 57,
+        "annual_income": 244380.3,
+        "department": "Engineering",
+        "years_experience": 3
+      },
+      {
+        "customer_id": 150,
+        "age": 69,
+        "annual_income": 119275.71,
+        "department": "Finance",
+        "years_experience": 21
+      }
+    ],
+    "schema": {
+      "customer_id": "integer",
+      "age": "integer[18:75]",
+      "annual_income": "float[25000:250000]",
+      "department": "categorical",
+      "years_experience": "integer[0:45]"
+    },
+    "metadata": {
+      "generator": "tabular",
+      "departments": ["Engineering", "Marketing", "Sales", "HR", "Finance", "Operations"]
+    }
+  },
+  "metadata": {
+    "pipeline_name": "customer_profiles",
+    "generator_type": "tabular",
+    "sample_size": 150,
+    "generation_time": 0.0011870861053466797,
+    "schema_fields": 5
+  },
+  "quality_score": 100,
+  "privacy_score": 95.0,
+  "timestamp": "2025-08-26 04:23:51"
+}
