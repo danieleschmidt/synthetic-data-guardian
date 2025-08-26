@@ -156,7 +156,7 @@ asyncpg>=0.28.0,<1.0.0
 
 # Development Server
 uvicorn[standard]>=0.23.2,<1.0.0
-gunicorn>=21.2.0,<22.0.0
+gunicorn>=21.2.0,<24.0.0
 
 # Configuration Management
 pydantic-settings>=2.0.0,<3.0.0
