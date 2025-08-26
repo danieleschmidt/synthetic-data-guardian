@@ -1,0 +1,88 @@
+{
+  "generation_id": "a1ba05e6-7936-4710-ab81-10ef7171e000",
+  "success": true,
+  "data": {
+    "records": [
+      {
+        "record_id": 1,
+        "product_type": "Home",
+        "customer_segment": "Premium",
+        "region": "Central",
+        "satisfaction": "Neutral",
+        "purchase_month": 10,
+        "is_returning_customer": true
+      },
+      {
+        "record_id": 2,
+        "product_type": "Home",
+        "customer_segment": "Basic",
+        "region": "South",
+        "satisfaction": "Dissatisfied",
+        "purchase_month": 8,
+        "is_returning_customer": false
+      },
+      {
+        "record_id": 3,
+        "product_type": "Clothing",
+        "customer_segment": "Basic",
+        "region": "South",
+        "satisfaction": "Very Satisfied",
+        "purchase_month": 8,
+        "is_returning_customer": false
+      },
+      {
+        "record_id": 4,
+        "product_type": "Electronics",
+        "customer_segment": "Premium",
+        "region": "North",
+        "satisfaction": "Neutral",
+        "purchase_month": 6,
+        "is_returning_customer": false
+      },
+      {
+        "record_id": 5,
+        "product_type": "Sports",
+        "customer_segment": "Basic",
+        "region": "South",
+        "satisfaction": "Satisfied",
+        "purchase_month": 10,
+        "is_returning_customer": true
+      }
+    ],
+    "schema": {
+      "record_id": "integer",
+      "product_type": "categorical",
+      "customer_segment": "categorical",
+      "region": "categorical",
+      "satisfaction": "categorical",
+      "purchase_month": "integer",
+      "is_returning_customer": "boolean"
+    },
+    "metadata": {
+      "generator": "categorical",
+      "categories": {
+        "product_type": ["Electronics", "Clothing", "Home", "Books", "Sports"],
+        "customer_segment": ["Premium", "Standard", "Basic"],
+        "region": ["North", "South", "East", "West", "Central"],
+        "satisfaction": [
+          "Very Satisfied",
+          "Satisfied",
+          "Neutral",
+          "Dissatisfied",
+          "Very Dissatisfied"
+        ]
+      },
+      "weighted_distributions": ["customer_segment", "satisfaction"]
+    }
+  },
+  "metadata": {
+    "pipeline_name": "test_categorical",
+    "generator_type": "categorical",
+    "sample_size": 5,
+    "generation_time": 0.00010514259338378906,
+    "schema_fields": 0
+  },
+  "quality_score": 100,
+  "privacy_score": 95.0,
+  "timestamp": "2025-08-26 04:33:18"
+}

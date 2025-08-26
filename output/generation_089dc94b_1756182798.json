@@ -1,0 +1,64 @@
+{
+  "generation_id": "089dc94b-ee26-445a-b044-522224e79f5a",
+  "success": true,
+  "data": {
+    "records": [
+      {
+        "user_id": 1,
+        "age": 20,
+        "income": 102581.06,
+        "department": "Finance",
+        "experience": 28
+      },
+      {
+        "user_id": 2,
+        "age": 74,
+        "income": 29711.29,
+        "department": "HR",
+        "experience": 20
+      },
+      {
+        "user_id": 3,
+        "age": 36,
+        "income": 181344.29,
+        "department": "Marketing",
+        "experience": 40
+      },
+      {
+        "user_id": 4,
+        "age": 69,
+        "income": 34329.83,
+        "department": "Sales",
+        "experience": 6
+      },
+      {
+        "user_id": 5,
+        "age": 39,
+        "income": 188535.61,
+        "department": "Finance",
+        "experience": 37
+      }
+    ],
+    "schema": {
+      "user_id": "integer",
+      "age": "integer[18:80]",
+      "income": "float[20000:200000]",
+      "department": "categorical",
+      "experience": "integer[0:40]"
+    },
+    "metadata": {
+      "generator": "tabular",
+      "departments": ["Engineering", "Marketing", "Sales", "HR", "Finance", "Operations"]
+    }
+  },
+  "metadata": {
+    "pipeline_name": "test_tabular",
+    "generator_type": "tabular",
+    "sample_size": 5,
+    "generation_time": 0.00011920928955078125,
+    "schema_fields": 0
+  },
+  "quality_score": 100,
+  "privacy_score": 75.0,
+  "timestamp": "2025-08-26 04:33:18"
+}
