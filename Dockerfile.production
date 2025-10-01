@@ -1,6 +1,6 @@
 
 # Production Dockerfile for Synthetic Data Guardian
-FROM python:3.13-slim AS base
+FROM python:3.13.7-slim AS base
 
 # Security: Run as non-root user
 RUN groupadd -r synthetic && useradd -r -g synthetic synthetic
